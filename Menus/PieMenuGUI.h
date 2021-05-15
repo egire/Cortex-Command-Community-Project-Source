@@ -116,6 +116,9 @@ public:
 
     public:
 
+		SerializableClassNameGetter
+		SerializableOverrideMethods
+
     enum SliceDirection
     {
         NONE = 0,
@@ -154,29 +157,29 @@ public:
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  Create
+    // Method:  Create
     //////////////////////////////////////////////////////////////////////////////////////////
     // Description:     Creates a Slice to be identical to another, by deep copy.
     // Arguments:       A reference to the Slice to deep copy.
     // Return value:    An error return value signaling sucess or any particular failure.
     //                  Anything below 0 is an error signal.
 
-        virtual int Create(const Slice &reference);
+		int Create(const Slice &reference);
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  Create
+    // Method:  Create
     //////////////////////////////////////////////////////////////////////////////////////////
     // Description:     Makes the Slice object ready for use.
     // Arguments:       None.
     // Return value:    An error return value signaling success or any particular failure.
     //                  Anything below 0 is an error signal.
 
-        virtual int Create();
+		int Create() override;
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  Create
+    // Method:  Create
     //////////////////////////////////////////////////////////////////////////////////////////
     // Description:     Makes the Serializable ready for use.
     // Arguments:       A Reader that the Serializable will create itself from.
@@ -185,7 +188,7 @@ public:
     // Return value:    An error return value signaling sucess or any particular failure.
     //                  Anything below 0 is an error signal.
 
-        virtual int Create(Reader &reader, bool checkType = true, bool doCreate = true)
+        int Create(Reader &reader, bool checkType = true, bool doCreate = true) override
         {
             // If we're being read from a file, we are ALWAYS scripted!
             m_SliceType = PSI_SCRIPTED;
@@ -194,52 +197,14 @@ public:
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  ReadProperty
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Description:     Reads a property value from a Reader stream. If the name isn't
-    //                  recognized by this class, then ReadProperty of the parent class
-    //                  is called. If the property isn't recognized by any of the base classes,
-    //                  false is returned, and the Reader's position is untouched.
-    // Arguments:       The name of the property to be read.
-    //                  A Reader lined up to the value of the property to be read.
-    // Return value:    An error return value signaling whether the property was successfully
-    //                  read or not. 0 means it was read successfully, and any nonzero indicates
-    //                  that a property of that name could not be found in this or base classes.
-
-        virtual int ReadProperty(std::string propName, Reader &reader);
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  Reset
+    // Method:  Reset
     //////////////////////////////////////////////////////////////////////////////////////////
     // Description:     Resets the entire Serializable, including its inherited members, to their
     //                  default settings or values.
     // Arguments:       None.
     // Return value:    None.
 
-        virtual void Reset() { Clear(); }
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  Save
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Description:     Saves the complete state of this Slice to an output stream for
-    //                  later recreation with Create(Reader &reader);
-    // Arguments:       A Writer that the Slice will save itself with.
-    // Return value:    An error return value signaling sucess or any particular failure.
-    //                  Anything below 0 is an error signal.
-
-        virtual int Save(Writer &writer) const;
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Virtual method:  GetClassName
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Description:     Gets the class name of this Entity.
-    // Arguments:       None.
-    // Return value:    A string with the friendly-formatted type name of this object.
-
-        virtual const std::string & GetClassName() const { return m_sClassName; }
+		void Reset() override { Clear(); }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -271,8 +236,6 @@ public:
 		SliceDirection GetDirection() const { return (SliceDirection)m_Direction; }
 
 
-        // Member variables
-        static const std::string m_sClassName;
         // Description of what this slice option does
         std::string m_Description;
         // The Slice type, also serves as icon index
@@ -304,6 +267,7 @@ public:
 
     private:
 
+		static const std::string c_ClassName; //!< A string with the friendly-formatted type name of this object.
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Method:          Clear
@@ -499,7 +463,7 @@ public:
 //                  from system memory.
 // Arguments:       None.
 
-    virtual ~PieMenuGUI() { Destroy(); }
+	~PieMenuGUI() { Destroy(); }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -517,14 +481,14 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Virtual method:  Reset
+// Method:  Reset
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Resets the entire PieMenuGUI, including its inherited members, to
 //                  their default settings or values.
 // Arguments:       None.
 // Return value:    None.
 
-    virtual void Reset() { Clear(); }
+	void Reset() { Clear(); }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -749,18 +713,18 @@ public:
 // Arguments:       None.
 // Return value:    None.
 
-    virtual void Update();
+	void Update();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Virtual Method:  Draw
+// Method:  Draw
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Draws the menu
-// Arguments:       A pointer to a BITMAP to draw on. OINT.
+// Arguments:       A pointer to a BITMAP to draw on. OWNERSHIP IS NOT TRANSFERRED!
 //                  The absolute position of the target bitmap's upper left corner in the scene.
 // Return value:    None.
 
-    virtual void Draw(BITMAP *pTargetBitmap, const Vector &targetPos = Vector()) const;
+	void Draw(BITMAP *pTargetBitmap, const Vector &targetPos = Vector()) const;
 
 
 
@@ -775,7 +739,7 @@ protected:
 // Method:          SelectSlice
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Sets a slice to be selected.
-// Arguments:       The slice to be selected. Has to be a slice currently in this - OINT!
+// Arguments:       The slice to be selected. Has to be a slice currently in this - OWNERSHIP IS NOT TRANSFERRED!
 //                  Whether to also move the cursor to the center of the newly selected slice.
 // Return value:    Whether this resulted in a different actual slice being selected (not 0).
 
@@ -899,8 +863,8 @@ private:
 
 
     // Disallow the use of some implicit methods.
-    PieMenuGUI(const PieMenuGUI &reference);
-    PieMenuGUI & operator=(const PieMenuGUI &rhs);
+	PieMenuGUI(const PieMenuGUI &reference) = delete;
+	PieMenuGUI & operator=(const PieMenuGUI &rhs) = delete;
 
 };
 

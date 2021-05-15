@@ -57,7 +57,7 @@ public:
 // Description:     Clears the manager.
 // Arguments:       None.
 
-    void Clear(void);
+    void Clear();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -73,9 +73,9 @@ public:
 // Method:          Update
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Updates the GUI.
-// Arguments:       None.
+// Arguments:       Whether keyboard events should be ignored or not. Used to avoid conflicts when custom keyboard handling for GUI elements is preset.
 
-    void Update(void);
+    void Update(bool ignoreKeyboardEvents = false);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ public:
 // Description:     Releases a mouse capture.
 // Arguments:       None.
 
-    void ReleaseMouse(void);
+    void ReleaseMouse();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ public:
 // Description:     Gets a unique ID for a panel.
 // Arguments:       None.
 
-    int GetPanelID(void);
+    int GetPanelID();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -182,7 +182,7 @@ private:
 // Description:     Creates the timer.
 // Arguments:       None.
 
-    bool CreateTimer(void);
+    bool CreateTimer();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ private:
 // Description:     Gets the current time since the timer was created.
 // Arguments:       None.
 
-    float GetTime(void);
+    float GetTime();
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////

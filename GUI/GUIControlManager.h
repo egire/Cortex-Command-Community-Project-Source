@@ -64,7 +64,7 @@ public:
 //                  system memory.
 // Arguments:       None.
 
-    virtual ~GUIControlManager() { Destroy(); }
+	~GUIControlManager() { Destroy(); }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ public:
 // Description:     Frees all the allocated resources.
 // Arguments:       None.
 
-    void Destroy(void);
+	void Destroy();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ public:
 // Description:     Clears all the controls.
 // Arguments:       None.
 
-    void Clear(void);
+    void Clear();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -117,9 +117,9 @@ public:
 // Method:          Update
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Updates the GUI every frame
-// Arguments:       None.
+// Arguments:       Whether keyboard events should be ignored or not. Used to avoid conflicts when custom keyboard handling for GUI elements is preset.
 
-    void Update(void);
+    void Update(bool ignoreKeyboardEvents = false);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ public:
 // Description:     Draws the GUI to the back buffer.
 // Arguments:       None.
 
-    void Draw(void);
+    void Draw();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ public:
 // Description:     Draws the mouse.
 // Arguments:       None.
 
-    void DrawMouse(void);
+    void DrawMouse();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +219,7 @@ public:
 // Arguments:       None.
 // Returns:         vector<GUIControl *> Pointer.
 
-    std::vector<GUIControl *> *GetControlList(void);
+    std::vector<GUIControl *> *GetControlList();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -295,19 +295,7 @@ public:
 //                  to the existing layout.
 // Returns:         True if sucessful.
 
-    bool Load(const std::string Filename, bool keepOld = false);
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Method:          Load
-//////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Loads the layout from a Reader class.
-// Arguments:       Reader object
-//                  Whether to NOT clear out the manager, but just add the controls loaded
-//                  to the existing layout.
-// Returns:         True if sucessful.
-
-    bool Load(Reader *R, bool keepOld = false);
+    bool Load(const std::string &Filename, bool keepOld = false);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
