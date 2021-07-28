@@ -170,41 +170,20 @@ enum MOType
     /// Reloads the all of the scripts on this object. This will also reload scripts for the original preset in PresetMan so future objects spawned will use the new scripts.
     /// </summary>
     /// <returns>An error return value signaling success or any particular failure. Anything below 0 is an error signal.</returns>
-    int ReloadScripts() override { return ReloadScripts(true); }
-
-    /// <summary>
-    /// Reloads the all of the scripts on this object. This will also optionally reload scripts for the original preset in PresetMan so future objects spawned will use the new scripts.
-    /// </summary>
-    /// <param name="alsoReloadPresetScripts">Whether to reload scripts on the PresetMan preset as well as those on the object instance. Irrelevant if the object instance is the preset.</param>
-    /// <returns>An error return value signaling success or any particular failure. Anything below 0 is an error signal.</returns>
-	int ReloadScripts(bool alsoReloadPresetScripts);
-
-    /// <summary>
-    /// Convenience method to get the script at the given path if it's on this MO. Like standard find, returns m_AllLoadedScripts.end() if it's not.
-    /// </summary>
-    /// <param name="scriptPath">The path to the script to find.</param>
-    /// <returns>The iterator pointing to the vector entry for the script or the end of the vector if the script was not found.</returns>
-	std::vector<std::pair<std::string, bool>>::iterator const FindScript(std::string const &scriptPath) { return std::find_if(m_AllLoadedScripts.begin(), m_AllLoadedScripts.end(), [&scriptPath](auto element) { return element.first == scriptPath; }); }
-
-    /// <summary>
-    /// Convenience method to get the script at the given path if it's on this MO. Like standard find, returns m_AllLoadedScripts.cend() if it's not.
-    /// </summary>
-    /// <param name="scriptPath">The path to the script to find.</param>
-    /// <returns>The iterator pointing to the vector entry for the script or the end of the vector if the script was not found.</returns>
-	std::vector<std::pair<std::string, bool>>::const_iterator const FindScript(std::string const &scriptPath) const { return std::find_if(m_AllLoadedScripts.cbegin(), m_AllLoadedScripts.cend(), [&scriptPath](auto element) { return element.first == scriptPath; }); }
+	int ReloadScripts();
 
     /// <summary>
     /// Checks if this MO has any scripts on it.
     /// </summary>
     /// <returns>Whether or not this MO has any scripts on it.</returns>
-	bool const HasAnyScripts() const { return !m_AllLoadedScripts.empty(); }
+	bool HasAnyScripts() const { return !m_AllLoadedScripts.empty(); }
 
     /// <summary>
     /// Checks if the script at the given path is one of the scripts on this MO.
     /// </summary>
     /// <param name="scriptPath">The path to the script to check.</param>
     /// <returns>Whether or not the script is on this MO.</returns>
-	bool const HasScript(const std::string &scriptPath) const { return FindScript(scriptPath) != m_AllLoadedScripts.end(); }
+	bool HasScript(const std::string &scriptPath) const { return m_AllLoadedScripts.find(scriptPath) != m_AllLoadedScripts.end(); }
 
     /// <summary>
     /// Adds the script at the given path as one of the scripts on this MO.
@@ -218,7 +197,7 @@ enum MOType
     /// </summary>
     /// <param name="scriptPath">The path to the script to check.</param>
     /// <returns>Whether or not the script is enabled on this MO.</returns>
-	bool const ScriptEnabled(const std::string &scriptPath) const { auto scriptIterator = FindScript(scriptPath); return scriptIterator != m_AllLoadedScripts.end() && scriptIterator->second == true; }
+    bool ScriptEnabled(const std::string &scriptPath) const { std::map<std::string, bool>::const_iterator scriptPathIterator = m_AllLoadedScripts.find(scriptPath); return scriptPathIterator != m_AllLoadedScripts.end() && scriptPathIterator->second == true; }
 
     /// <summary>
     /// Enable the script at the given path on this MO.
@@ -273,7 +252,8 @@ enum MOType
     /// Override SetPresetName so it also resets script preset name and then reloads scripts to safely allow for multiple scripts.
     /// </summary>
     /// <param name="newName">A string reference with the instance name of this Entity.</param>
-    void SetPresetName(const std::string &newName) override { Entity::SetPresetName(newName); m_ScriptPresetName.clear(); ReloadScripts(); }
+    /// <param name="calledFromLua">Whether this method was called from Lua, in which case this change is cosmetic only and shouldn't affect scripts.</param>
+    void SetPresetName(const std::string &newName, bool calledFromLua = false) override { Entity::SetPresetName(newName); if (!calledFromLua) { m_ScriptPresetName.clear(); ReloadScripts(); } }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -752,11 +732,23 @@ enum MOType
 //////////////////////////////////////////////////////////////////////////////////////////
 // Virtual method:  GetEffectRotAngle
 //////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Returns the current absolute angle of rotation of this MovableObject's effect.
+// Description:     Gets the current absolute angle of rotation of this MovableObject's effect.
 // Arguments:       None.
 // Return value:    The absolute angle in radians.
 
 	float GetEffectRotAngle() const { return m_EffectRotAngle; }
+
+	/// <summary>
+	/// Gets the starting strength of this MovableObject's effect.
+	/// </summary>
+	/// <returns>The starting strength of the effect, 0-255.</returns>
+	int GetEffectStartStrength() const { return m_EffectStartStrength; }
+
+	/// <summary>
+	/// Gets the stopping strength of this MovableObject's effect.
+	/// </summary>
+	/// <returns>The stopping strength of the effect, 0-255.</returns>
+	int GetEffectStopStrength() const { return m_EffectStopStrength; }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Virtual method:  SetAngularVel
@@ -1708,6 +1700,30 @@ enum MOType
 
 	void SetWoundDamageMultiplier(float value) { m_WoundDamageMultiplier = value; }
 
+    /// <summary>
+    /// Gets whether or not this MovableObject should apply wound damage when it collides with another MovableObject.
+    /// </summary>
+    /// <returns>Whether or not this MovableObject should apply wound damage when it collides with another MovableObject.</returns>
+    bool GetApplyWoundDamageOnCollision() const { return m_ApplyWoundDamageOnCollision; }
+
+    /// <summary>
+    /// Sets whether or not this MovableObject should apply wound damage when it collides with another MovableObject.
+    /// </summary>
+    /// <param name="applyWoundDamageOnCollision">Whether or not this MovableObject should apply wound damage on collision.</param>
+    void SetApplyWoundDamageOnCollision(bool applyWoundDamageOnCollision) { m_ApplyWoundDamageOnCollision = applyWoundDamageOnCollision; }
+
+    /// <summary>
+    /// Gets whether or not this MovableObject should apply burst wound damage when it collides with another MovableObject.
+    /// </summary>
+    /// <returns>Whether or not this MovableObject should apply burst wound damage when it collides with another MovableObject.</returns>
+    bool GetApplyWoundBurstDamageOnCollision() const { return m_ApplyWoundBurstDamageOnCollision; }
+
+    /// <summary>
+    /// Sets whether or not this MovableObject should apply burst wound damage when it collides with another MovableObject.
+    /// </summary>
+    /// <param name="applyWoundDamageOnCollision">Whether or not this MovableObject should apply burst wound damage on collision.</param>
+    void SetApplyWoundBurstDamageOnCollision(bool applyWoundBurstDamageOnCollision) { m_ApplyWoundBurstDamageOnCollision = applyWoundBurstDamageOnCollision; }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1922,10 +1938,8 @@ protected:
     // To draw this guy's HUD or not
     bool m_HUDVisible;
 
-    // A vector of scripts have been loaded onto this. Contains a pair with the script path and whether or not the script is enabled.
-    std::vector<std::pair<std::string, bool>> m_AllLoadedScripts;
-    // A map of function name strings to vectors of scripts for each function name. Said vectors contain pointers to pairs with the script path and whether or not the script is enabled. Used to efficiently avoid extra Lua calls.
-    std::unordered_map<std::string, std::vector<std::pair<std::string, bool> *>> m_FunctionsAndScripts;
+    std::map<std::string, bool> m_AllLoadedScripts; //!< A map of script paths to the enabled state of the given script.
+    std::unordered_map<std::string, std::vector<std::string>> m_FunctionsAndScripts; //!< A map of function names to vectors of scripts paths. Used to maintain script execution order and avoid extraneous Lua calls.
 
     // The ID name unique to this' preset and its defined scripted functions in the lua state.
     std::string m_ScriptPresetName;
@@ -1973,6 +1987,8 @@ protected:
 	float m_DamageOnPenetration;
 	// Damage multiplier transferred to wound inflicted by this object on penetration
 	float m_WoundDamageMultiplier;
+    bool m_ApplyWoundDamageOnCollision; //!< Whether or not this should apply wound damage on collision, respecting WoundDamageMultiplier and without creating a wound.
+    bool m_ApplyWoundBurstDamageOnCollision; //!< Whether or not this should apply wound burst damage on collision, respecting WoundDamageMultiplier and without creating a wound.
 	//Whether this MO should ignore terrain when traveling
 	bool m_IgnoreTerrain;
 	// MOID hit during last Travel

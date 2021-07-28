@@ -24,6 +24,7 @@
 #include "PieMenuGUI.h"
 #include "Scene.h"
 #include "SettingsMan.h"
+#include "PresetMan.h"
 
 #include "GUI/GUI.h"
 #include "GUI/AllegroBitmap.h"
@@ -260,34 +261,22 @@ int ACrab::Create(const ACrab &reference) {
 int ACrab::ReadProperty(const std::string_view &propName, Reader &reader)
 {
     if (propName == "Turret") {
-        Turret iniDefinedObject;
-        reader >> &iniDefinedObject;
-        SetTurret(dynamic_cast<Turret *>(iniDefinedObject.Clone()));
+        SetTurret(dynamic_cast<Turret *>(g_PresetMan.ReadReflectedPreset(reader)));
     } else if (propName == "Jetpack") {
-        AEmitter iniDefinedObject;
-        reader >> &iniDefinedObject;
-        SetJetpack(dynamic_cast<AEmitter *>(iniDefinedObject.Clone()));
+        SetJetpack(dynamic_cast<AEmitter *>(g_PresetMan.ReadReflectedPreset(reader)));
     } else if (propName == "JumpTime") {
         reader >> m_JetTimeTotal;
         m_JetTimeTotal *= 1000;
 	} else if (propName == "JumpAngleRange") {
 		reader >> m_JetAngleRange;
     } else if (propName == "LFGLeg" || propName == "LeftFGLeg") {
-        Leg iniDefinedObject;
-        reader >> &iniDefinedObject;
-        SetLeftFGLeg(dynamic_cast<Leg *>(iniDefinedObject.Clone()));
-    } else if (propName == "LBGLeg" || propName == "LeftFGLeg") {
-        Leg iniDefinedObject;
-        reader >> &iniDefinedObject;
-        SetLeftBGLeg(dynamic_cast<Leg *>(iniDefinedObject.Clone()));
-    } else if (propName == "RFGLeg" || propName == "LeftFGLeg") {
-        Leg iniDefinedObject;
-        reader >> &iniDefinedObject;
-        SetRightFGLeg(dynamic_cast<Leg *>(iniDefinedObject.Clone()));
-    } else if (propName == "RBGLeg" || propName == "LeftFGLeg") {
-        Leg iniDefinedObject;
-        reader >> &iniDefinedObject;
-        SetRightBGLeg(dynamic_cast<Leg *>(iniDefinedObject.Clone()));
+        SetLeftFGLeg(dynamic_cast<Leg *>(g_PresetMan.ReadReflectedPreset(reader)));
+    } else if (propName == "LBGLeg" || propName == "LeftBGLeg") {
+        SetLeftBGLeg(dynamic_cast<Leg *>(g_PresetMan.ReadReflectedPreset(reader)));
+    } else if (propName == "RFGLeg" || propName == "RightFGLeg") {
+        SetRightFGLeg(dynamic_cast<Leg *>(g_PresetMan.ReadReflectedPreset(reader)));
+    } else if (propName == "RBGLeg" || propName == "RightBGLeg") {
+        SetRightBGLeg(dynamic_cast<Leg *>(g_PresetMan.ReadReflectedPreset(reader)));
     } else if (propName == "LFootGroup" || propName == "LeftFootGroup") {
         delete m_pLFGFootGroup;
         delete m_pLBGFootGroup;
@@ -459,7 +448,7 @@ Vector ACrab::GetCPUPos() const
 Vector ACrab::GetEyePos() const
 {
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-        return m_pTurret->GetMountedDevice()->GetPos();
+        return m_pTurret->GetFirstMountedDevice()->GetPos();
 
     return m_Pos;
 }
@@ -467,11 +456,10 @@ Vector ACrab::GetEyePos() const
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ACrab::SetTurret(Turret *newTurret) {
+    if (m_pTurret && m_pTurret->IsAttached()) { RemoveAndDeleteAttachable(m_pTurret); }
     if (newTurret == nullptr) {
-        if (m_pTurret && m_pTurret->IsAttached()) { RemoveAttachable(m_pTurret); }
         m_pTurret = nullptr;
     } else {
-        if (m_pTurret && m_pTurret->IsAttached()) { RemoveAttachable(m_pTurret); }
         m_pTurret = newTurret;
         AddAttachable(newTurret);
 
@@ -488,11 +476,10 @@ void ACrab::SetTurret(Turret *newTurret) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ACrab::SetJetpack(AEmitter *newJetpack) {
+    if (m_pJetpack && m_pJetpack->IsAttached()) { RemoveAndDeleteAttachable(m_pJetpack); }
     if (newJetpack == nullptr) {
-        if (m_pJetpack && m_pJetpack->IsAttached()) { RemoveAttachable(m_pJetpack); }
         m_pJetpack = nullptr;
     } else {
-        if (m_pJetpack && m_pJetpack->IsAttached()) { RemoveAttachable(m_pJetpack); }
         m_pJetpack = newJetpack;
         AddAttachable(newJetpack);
 
@@ -511,11 +498,10 @@ void ACrab::SetJetpack(AEmitter *newJetpack) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ACrab::SetLeftFGLeg(Leg *newLeg) {
+    if (m_pLFGLeg && m_pLFGLeg->IsAttached()) { RemoveAndDeleteAttachable(m_pLFGLeg); }
     if (newLeg == nullptr) {
-        if (m_pLFGLeg && m_pLFGLeg->IsAttached()) { RemoveAttachable(m_pLFGLeg); }
         m_pLFGLeg = nullptr;
     } else {
-        if (m_pLFGLeg && m_pLFGLeg->IsAttached()) { RemoveAttachable(m_pLFGLeg); }
         m_pLFGLeg = newLeg;
         AddAttachable(newLeg);
 
@@ -533,11 +519,10 @@ void ACrab::SetLeftFGLeg(Leg *newLeg) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ACrab::SetLeftBGLeg(Leg *newLeg) {
+    if (m_pLBGLeg && m_pLBGLeg->IsAttached()) { RemoveAndDeleteAttachable(m_pLBGLeg); }
     if (newLeg == nullptr) {
-        if (m_pLBGLeg && m_pLBGLeg->IsAttached()) { RemoveAttachable(m_pLBGLeg); }
         m_pLBGLeg = nullptr;
     } else {
-        if (m_pLBGLeg && m_pLBGLeg->IsAttached()) { RemoveAttachable(m_pLBGLeg); }
         m_pLBGLeg = newLeg;
         AddAttachable(newLeg);
 
@@ -555,11 +540,10 @@ void ACrab::SetLeftBGLeg(Leg *newLeg) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ACrab::SetRightFGLeg(Leg *newLeg) {
+    if (m_pRFGLeg && m_pRFGLeg->IsAttached()) { RemoveAndDeleteAttachable(m_pRFGLeg); }
     if (newLeg == nullptr) {
-        if (m_pRFGLeg && m_pRFGLeg->IsAttached()) { RemoveAttachable(m_pRFGLeg); }
         m_pRFGLeg = nullptr;
     } else {
-        if (m_pRFGLeg && m_pRFGLeg->IsAttached()) { RemoveAttachable(m_pRFGLeg); }
         m_pRFGLeg = newLeg;
         AddAttachable(newLeg);
 
@@ -576,11 +560,10 @@ void ACrab::SetRightFGLeg(Leg *newLeg) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ACrab::SetRightBGLeg(Leg *newLeg) {
+    if (m_pRBGLeg && m_pRBGLeg->IsAttached()) { RemoveAndDeleteAttachable(m_pRBGLeg); }
     if (newLeg == nullptr) {
-        if (m_pRBGLeg && m_pRBGLeg->IsAttached()) { RemoveAttachable(m_pRBGLeg); }
         m_pRBGLeg = nullptr;
     } else {
-        if (m_pRBGLeg && m_pRBGLeg->IsAttached()) { RemoveAttachable(m_pRBGLeg); }
         m_pRBGLeg = newLeg;
         AddAttachable(newLeg);
 
@@ -703,7 +686,7 @@ bool ACrab::AddPieMenuSlices(PieMenuGUI *pPieMenu)
 
     // Add any custom slices from a currently held device
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-        m_pTurret->GetMountedDevice()->AddPieMenuSlices(pPieMenu);
+        m_pTurret->GetFirstMountedDevice()->AddPieMenuSlices(pPieMenu); //TODO This should care about all devices but all this will be redone soon so I'm leaving it as-is.
 
     return true;
 }
@@ -757,7 +740,7 @@ MovableObject * ACrab::GetEquippedItem() const
 {
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        return m_pTurret->GetMountedDevice();
+        return m_pTurret->GetFirstMountedDevice();
     }
 
     return 0;
@@ -770,13 +753,13 @@ MovableObject * ACrab::GetEquippedItem() const
 // Description:     Indicates whether the currently held device's current mag is empty on
 //                  ammo or not.
 
-bool ACrab::FirearmIsReady() const
-{
-    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-    {
-        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
-        if (pWeapon && pWeapon->GetRoundInMagCount() != 0)
-            return true;
+bool ACrab::FirearmIsReady() const {
+    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice()) {
+        for (const HeldDevice *mountedDevice : m_pTurret->GetMountedDevices()) {
+            if (const HDFirearm *mountedFirearm = dynamic_cast<const HDFirearm *>(mountedDevice); mountedFirearm && mountedFirearm->GetRoundInMagCount() != 0) {
+                return true;
+            }
+        }
     }
 
     return false;
@@ -788,16 +771,8 @@ bool ACrab::FirearmIsReady() const
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Indicates whether the currently held HDFirearm's is out of ammo.
 
-bool ACrab::FirearmIsEmpty() const
-{
-    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-    {
-        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
-        if (pWeapon && pWeapon->GetRoundInMagCount() == 0)
-            return true;
-    }
-
-    return false;
+bool ACrab::FirearmIsEmpty() const {
+    return !FirearmIsReady() && m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice();
 }
 
 
@@ -806,13 +781,13 @@ bool ACrab::FirearmIsEmpty() const
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Indicates whether the currently held HDFirearm's is almost out of ammo.
 
-bool ACrab::FirearmNeedsReload() const
-{
-    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-    {
-        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
-        if (pWeapon && pWeapon->NeedsReloading())
-            return true;
+bool ACrab::FirearmNeedsReload() const {
+    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice()) {
+        for (const HeldDevice *mountedDevice : m_pTurret->GetMountedDevices()) {
+            if (const HDFirearm *mountedFirearm = dynamic_cast<const HDFirearm *>(mountedDevice); mountedFirearm && mountedFirearm->NeedsReloading()) {
+                return true;
+            }
+        }
     }
 
     return false;
@@ -828,7 +803,7 @@ bool ACrab::FirearmIsSemiAuto() const
 {
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
+        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetFirstMountedDevice());
         return pWeapon && !pWeapon->IsFullAuto();
     }
     return false;
@@ -836,22 +811,21 @@ bool ACrab::FirearmIsSemiAuto() const
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Virtual Method:  ReloadFirearm
+// Virtual Method:  ReloadFirearms
 //////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Reloads the currently held firearm, if any.
+// Description:     Reloads the currently held firearms, if any.
 // Arguments:       None.
 // Return value:    None.
 
-void ACrab::ReloadFirearm()
-{
-    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-    {
-        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
-        if (pWeapon)
-            pWeapon->Reload();
+void ACrab::ReloadFirearms() {
+    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice()) {
+        for (HeldDevice *mountedDevice : m_pTurret->GetMountedDevices()) {
+            if (HDFirearm *mountedFirearm = dynamic_cast<HDFirearm *>(mountedDevice)) {
+                mountedFirearm->Reload();
+            }
+        }
     }
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Virtual Method:  FirearmActivationDelay
@@ -864,7 +838,7 @@ int ACrab::FirearmActivationDelay() const
     // Check if the currently held device is already the desired type
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
+        HDFirearm *pWeapon = dynamic_cast<HDFirearm *>(m_pTurret->GetFirstMountedDevice());
         if (pWeapon)
             return pWeapon->GetActivationDelay();
     }
@@ -897,7 +871,7 @@ bool ACrab::IsWithinRange(Vector &point) const
     // Add the sharp range of the equipped weapon
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        range += m_pTurret->GetMountedDevice()->GetSharpLength() * m_SharpAimProgress;
+        range += m_pTurret->GetFirstMountedDevice()->GetSharpLength() * m_SharpAimProgress;
     }
 
     return distance <= range;
@@ -923,8 +897,8 @@ bool ACrab::Look(float FOVSpread, float range)
     // If aiming down the barrel, look through that
     if (m_Controller.IsState(AIM_SHARP) && m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        aimPos = m_pTurret->GetMountedDevice()->GetPos();
-        aimDistance += m_pTurret->GetMountedDevice()->GetSharpLength();
+        aimPos = m_pTurret->GetFirstMountedDevice()->GetPos();
+        aimDistance += m_pTurret->GetFirstMountedDevice()->GetSharpLength();
     }
     // If just looking, use the sensors on the turret instead
     else if (m_pTurret && m_pTurret->IsAttached())
@@ -965,8 +939,8 @@ MovableObject * ACrab::LookForMOs(float FOVSpread, unsigned char ignoreMaterial,
     // If aiming down the barrel, look through that
     if (m_Controller.IsState(AIM_SHARP) && m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        aimPos = m_pTurret->GetMountedDevice()->GetPos();
-        aimDistance += m_pTurret->GetMountedDevice()->GetSharpLength();
+        aimPos = m_pTurret->GetFirstMountedDevice()->GetPos();
+        aimDistance += m_pTurret->GetFirstMountedDevice()->GetSharpLength();
     }
     // If just looking, use the sensors on the turret instead
     else if (m_pTurret && m_pTurret->IsAttached())
@@ -2152,18 +2126,23 @@ void ACrab::Update()
 
     if (m_pJetpack && m_pJetpack->IsAttached())
     {
-        // Start Jetpack burn
-        if (m_Controller.IsState(BODY_JUMPSTART) && m_JetTimeLeft > 0)
-        {
-            m_pJetpack->TriggerBurst();
-            // This is to make sure se get loose from being stuck
-            m_ForceDeepCheck = true;
-            m_pJetpack->EnableEmission(true);
-            // Quadruple this for the burst
-            m_JetTimeLeft -= g_TimerMan.GetDeltaTimeMS() * 10;
-            if (m_JetTimeLeft < 0)
-                m_JetTimeLeft = 0;
-        }
+		if (m_JetTimeTotal > 0) {
+			// Jetpack throttle depletes relative to jet time, but only if throttle range values have been defined
+			float jetTimeRatio = std::max(m_JetTimeLeft / m_JetTimeTotal, 0.0F);
+			m_pJetpack->SetThrottle(jetTimeRatio * 2.0F - 1.0F);
+			float minScale = 1.0F - m_pJetpack->GetMinThrottle();
+			m_pJetpack->SetFlashScale(minScale + (1.0F + m_pJetpack->GetMaxThrottle() - minScale) * jetTimeRatio);
+		}
+		// Start Jetpack burn
+		if (m_Controller.IsState(BODY_JUMPSTART) && m_JetTimeLeft > 0 && m_Status != INACTIVE)
+		{
+			m_pJetpack->TriggerBurst();
+			// This is to make sure se get loose from being stuck
+			m_ForceDeepCheck = true;
+			m_pJetpack->EnableEmission(true);
+			// Quadruple this for the burst
+			m_JetTimeLeft = std::max(m_JetTimeLeft - g_TimerMan.GetDeltaTimeMS() * 10.0F, 0.0F);
+		}
         // Jetpack is burning
         else if (m_Controller.IsState(BODY_JUMP) && m_JetTimeLeft > 0)
         {
@@ -2171,36 +2150,31 @@ void ACrab::Update()
             // Jetpacks are noisy!
             m_pJetpack->AlarmOnEmit(m_Team);
             // Deduct from the jetpack time
-            m_JetTimeLeft -= g_TimerMan.GetDeltaTimeMS();
+            m_JetTimeLeft = std::max(m_JetTimeLeft - g_TimerMan.GetDeltaTimeMS(), 0.0F);
             m_MoveState = JUMP;
         }
         // Jetpack is off/turning off
-        else
-        {
+        else {
             m_pJetpack->EnableEmission(false);
-            if (m_MoveState == JUMP)
-                m_MoveState = STAND;
+			if (m_MoveState == JUMP) { m_MoveState = STAND; }
 
             // Replenish the jetpack time, twice as fast
-            m_JetTimeLeft += g_TimerMan.GetDeltaTimeMS() * 2;
-            if (m_JetTimeLeft >= m_JetTimeTotal)
-                m_JetTimeLeft = m_JetTimeTotal;
+			m_JetTimeLeft = std::min(m_JetTimeLeft + g_TimerMan.GetDeltaTimeMS() * 2.0F, m_JetTimeTotal);
         }
 
-		float maxAngle = c_HalfPI * m_JetAngleRange;
         // Direct the jetpack nozzle according to movement stick if analog input is present
-        if (m_Controller.GetAnalogMove().GetMagnitude() > 0.1)
+        if (m_Controller.GetAnalogMove().GetMagnitude() > 0.1F)
         {
-			float minAngle = -maxAngle - c_HalfPI;
-			maxAngle -= c_HalfPI;
-			float jetAngle = std::clamp(m_Controller.GetAnalogMove().GetAbsRadAngle(), minAngle, maxAngle) - c_PI;
-            m_pJetpack->SetEmitAngle(FacingAngle(jetAngle));
+			//To-do: test whether this works properly
+			float jetAngle = (m_Controller.GetAnalogMove().GetAbsRadAngle() - c_PI);
+			if (jetAngle > c_PI) { jetAngle -= c_TwoPI; }
+			m_pJetpack->SetEmitAngle(FacingAngle(jetAngle * m_JetAngleRange));
         }
         // Or just use the aim angle if we're getting digital input
-        else
-        {
-			float jetAngle = m_AimAngle > 0 ? (m_AimAngle * m_JetAngleRange) : 0;
-			jetAngle = jetAngle - maxAngle - c_HalfPI;
+        else {
+			// Halve the jet angle when looking downwards so the actor isn't forced to go sideways (To-do: don't hardcode this value?)
+			float jetAngle = m_AimAngle > 0 ? m_AimAngle * m_JetAngleRange : -m_AimAngle * m_JetAngleRange * 0.5F;
+			jetAngle -= (c_HalfPI * m_JetAngleRange + c_HalfPI);
             // Don't need to use FacingAngle on this becuase it's already applied to the AimAngle since last update.
             m_pJetpack->SetEmitAngle(jetAngle);
         }
@@ -2266,20 +2240,14 @@ void ACrab::Update()
     ////////////////////////////////////
     // Reload held MO, if applicable
 
-    if (m_pTurret && m_pTurret->IsAttached())
-    {
-        HeldDevice *pDevice = m_pTurret->GetMountedDevice();
+    if (m_Controller.IsState(WEAPON_RELOAD) && FirearmNeedsReload()) {
+        ReloadFirearms();
 
-        // Holds device, check if we are commanded to reload, or do other related stuff
-        if (pDevice)
-        {
-            // Only reload if no other pickuppable item is in reach
-            if (!pDevice->IsFull() && m_Controller.IsState(WEAPON_RELOAD))
-            {
-                pDevice->Reload();
-				if (m_DeviceSwitchSound) { m_DeviceSwitchSound->Play(m_Pos); }
-            }
-        }
+        if (m_DeviceSwitchSound) { m_DeviceSwitchSound->Play(m_Pos); }
+
+        // Interrupt sharp aiming
+        m_SharpAimTimer.Reset();
+        m_SharpAimProgress = 0;
     }
 
     ////////////////////////////////////
@@ -2390,14 +2358,15 @@ void ACrab::Update()
     ////////////////////////////////////
     // Fire/Activate held devices
 
-    if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-    {
-        // Activate held device, if a device is held.
-        m_pTurret->GetMountedDevice()->SetSharpAim(m_SharpAimProgress);
-        if (m_Controller.IsState(WEAPON_FIRE))
-            m_pTurret->GetMountedDevice()->Activate();
-        else
-            m_pTurret->GetMountedDevice()->Deactivate();
+    if (m_pTurret && m_pTurret->IsAttached()) {
+        for (HeldDevice *mountedDevice : m_pTurret->GetMountedDevices()) {
+            mountedDevice->SetSharpAim(m_SharpAimProgress);
+            if (m_Controller.IsState(WEAPON_FIRE)) {
+                mountedDevice->Activate();
+            } else {
+                mountedDevice->Deactivate();
+            }
+        }
     }
 
     // Controller disabled
@@ -2656,7 +2625,7 @@ void ACrab::Update()
     /////////////////////////////////
     // Manage Attachable:s
     if (m_pTurret && m_pTurret->IsAttached()) {
-        m_pTurret->SetMountedDeviceRotOffset((m_AimAngle * static_cast<float>(GetFlipFactor())) - m_Rotation.GetRadAngle());
+        m_pTurret->SetMountedDeviceRotationOffset((m_AimAngle * static_cast<float>(GetFlipFactor())) - m_Rotation.GetRadAngle());
     }
 
     if (m_pLFGLeg && m_pLFGLeg->IsAttached()) {
@@ -2697,7 +2666,7 @@ void ACrab::Update()
 
     if (m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
     {
-        float maxLength = m_pTurret->GetMountedDevice()->GetSharpLength();
+        float maxLength = m_pTurret->GetFirstMountedDevice()->GetSharpLength();
 
         // Use a non-terrain check ray to cap the magnitude, so we can't see into objects etc
         if (m_SharpAimProgress > 0)
@@ -2707,8 +2676,8 @@ void ACrab::Update()
             sharpAimVector *= aimMatrix;
 
             // See how far along the sharp aim vector there is opaque air
-//            float result = g_SceneMan.CastNotMaterialRay(m_pLFGLeg->GetMountedDevice()->GetMuzzlePos(), sharpAimVector, g_MaterialAir, 5);
-            float result = g_SceneMan.CastObstacleRay(m_pTurret->GetMountedDevice()->GetMuzzlePos(), sharpAimVector, notUsed, notUsed, GetRootID(), IgnoresWhichTeam(), g_MaterialAir, 5);
+//            float result = g_SceneMan.CastNotMaterialRay(m_pLFGLeg->GetFirstMountedDevice()->GetMuzzlePos(), sharpAimVector, g_MaterialAir, 5);
+            float result = g_SceneMan.CastObstacleRay(m_pTurret->GetFirstMountedDevice()->GetMuzzlePos(), sharpAimVector, notUsed, notUsed, GetRootID(), IgnoresWhichTeam(), g_MaterialAir, 5);
             // If we didn't find anything but air before the sharpdistance, then don't alter the sharp distance
             if (result >= 0 && result < (maxLength * m_SharpAimProgress))
             {
@@ -2891,7 +2860,7 @@ void ACrab::DrawHUD(BITMAP *pTargetBitmap, const Vector &targetPos, int whichScr
 
     // Device aiming reticule
     if (m_Controller.IsState(AIM_SHARP) && m_pTurret && m_pTurret->IsAttached() && m_pTurret->HasMountedDevice())
-        m_pTurret->GetMountedDevice()->DrawHUD(pTargetBitmap, targetPos, whichScreen, m_Controller.IsPlayerControlled());
+        m_pTurret->GetFirstMountedDevice()->DrawHUD(pTargetBitmap, targetPos, whichScreen, m_Controller.IsPlayerControlled());
 
     //////////////////////////////////////
     // Draw stat info HUD
@@ -2957,28 +2926,26 @@ void ACrab::DrawHUD(BITMAP *pTargetBitmap, const Vector &targetPos, int whichScr
             m_HUDStack += -10;
         }
         // Held-related GUI stuff
-        else if (m_pTurret && m_pTurret->IsAttached())
-        {
-            HDFirearm *pHeldFirearm = dynamic_cast<HDFirearm *>(m_pTurret->GetMountedDevice());
-
-            // Ammo
-            if (pHeldFirearm)
-            {
+        else if (m_pTurret && m_pTurret->IsAttached()) {
+            std::string textString;
+            for (const HeldDevice *mountedDevice : m_pTurret->GetMountedDevices()) {
+                if (const HDFirearm *mountedFirearm = dynamic_cast<const HDFirearm *>(mountedDevice)) {
+                    if (!textString.empty()) { textString += " | "; }
+                    if (mountedFirearm->IsReloading()) {
+                        textString += "Reloading";
+                    } else {
+                        textString += mountedFirearm->GetRoundInMagCount() > 0 ? std::to_string(mountedFirearm->GetRoundInMagCount()) : "Infinite";
+                    }
+                }
+            }
+            if (!textString.empty()) {
                 str[0] = -56; str[1] = 0;
-                pSymbolFont->DrawAligned(&allegroBitmap, drawPos.m_X - 10, drawPos.m_Y + m_HUDStack, str, GUIFont::Left);
-                if (pHeldFirearm->IsReloading())
-                    std::snprintf(str, sizeof(str), "%s", "Reloading...");
-                else if (pHeldFirearm->GetRoundInMagCount() >= 0)
-                    std::snprintf(str, sizeof(str), "%i", pHeldFirearm->GetRoundInMagCount());
-                else
-                    std::snprintf(str, sizeof(str), "%s", "INF");
-                pSmallFont->DrawAligned(&allegroBitmap, drawPos.m_X - 0, drawPos.m_Y + m_HUDStack + 3, str, GUIFont::Left);
-
+                pSymbolFont->DrawAligned(&allegroBitmap, drawPos.GetFloorIntX() - 10, drawPos.GetFloorIntY() + m_HUDStack, str, GUIFont::Left);
+                pSmallFont->DrawAligned(&allegroBitmap, drawPos.GetFloorIntX() - 0, drawPos.GetFloorIntY() + m_HUDStack + 3, textString, GUIFont::Left);
                 m_HUDStack += -10;
             }
-        }
-        else
-        {
+
+        } else {
             std::snprintf(str, sizeof(str), "NO TURRET!");
             pSmallFont->DrawAligned(&allegroBitmap, drawPos.m_X + 2, drawPos.m_Y + m_HUDStack + 3, str, GUIFont::Centre);
             m_HUDStack += -9;
