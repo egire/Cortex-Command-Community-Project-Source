@@ -19,8 +19,6 @@
 #include "AssemblyEditor.h"
 
 #include "NetworkServer.h"
-#include "MultiplayerServerLobby.h"
-#include "MultiplayerGame.h"
 
 namespace RTE {
 

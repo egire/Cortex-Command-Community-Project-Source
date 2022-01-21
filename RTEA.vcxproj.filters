@@ -396,12 +396,6 @@
     <ClInclude Include="Managers\NetworkServer.h">
       <Filter>Managers</Filter>
     </ClInclude>
-    <ClInclude Include="Activities\MultiplayerGame.h">
-      <Filter>Activities</Filter>
-    </ClInclude>
-    <ClInclude Include="Activities\MultiplayerServerLobby.h">
-      <Filter>Activities</Filter>
-    </ClInclude>
     <ClInclude Include="System\StandardIncludes.h">
       <Filter>System</Filter>
     </ClInclude>
@@ -896,12 +890,6 @@
     </ClCompile>
     <ClCompile Include="Managers\NetworkServer.cpp">
       <Filter>Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="Activities\MultiplayerGame.cpp">
-      <Filter>Activities</Filter>
-    </ClCompile>
-    <ClCompile Include="Activities\MultiplayerServerLobby.cpp">
-      <Filter>Activities</Filter>
     </ClCompile>
     <ClCompile Include="System\StandardIncludes.cpp">
       <Filter>System</Filter>

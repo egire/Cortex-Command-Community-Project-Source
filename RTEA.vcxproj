@@ -690,8 +690,6 @@
     <ClInclude Include="Activities\GAScripted.h" />
     <ClInclude Include="Activities\GATutorial.h" />
     <ClInclude Include="Activities\GibEditor.h" />
-    <ClInclude Include="Activities\MultiplayerGame.h" />
-    <ClInclude Include="Activities\MultiplayerServerLobby.h" />
     <ClInclude Include="Activities\SceneEditor.h" />
     <ClInclude Include="Menus\AreaEditorGUI.h" />
     <ClInclude Include="Menus\AreaPickerGUI.h" />
@@ -993,8 +991,6 @@
     <ClCompile Include="Activities\GAScripted.cpp" />
     <ClCompile Include="Activities\GATutorial.cpp" />
     <ClCompile Include="Activities\GibEditor.cpp" />
-    <ClCompile Include="Activities\MultiplayerGame.cpp" />
-    <ClCompile Include="Activities\MultiplayerServerLobby.cpp" />
     <ClCompile Include="Activities\SceneEditor.cpp" />
     <ClCompile Include="Menus\AreaEditorGUI.cpp" />
     <ClCompile Include="Menus\AreaPickerGUI.cpp" />
