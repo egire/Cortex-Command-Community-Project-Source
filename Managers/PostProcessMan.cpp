@@ -18,9 +18,6 @@ namespace RTE {
 		m_BlueGlow = nullptr;
 		m_BlueGlowHash = 0;
 		m_TempEffectBitmaps.clear();
-		for (int i = 0; i < c_MaxScreenCount; ++i) {
-			m_ScreenRelativeEffects.at(i).clear();
-		}
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,9 +65,6 @@ namespace RTE {
 		int screenOcclusionOffsetY = g_SceneMan.GetScreenOcclusion(playerScreen).GetFloorIntY();
 		int occludedOffsetX = targetBitmap->w + screenOcclusionOffsetX;
 		int occludedOffsetY = targetBitmap->h + screenOcclusionOffsetY;
-
-		// Copy post effects received by client if in network mode
-		if (g_FrameMan.GetDrawNetworkBackBuffer()) { g_PostProcessMan.GetNetworkPostEffectsList(0, screenRelativeEffectsList); }
 
 		// Adjust for the player screen's position on the final buffer
 		for (const PostEffect &postEffect : screenRelativeEffectsList) {
@@ -171,28 +165,6 @@ namespace RTE {
 			}
 		}
 		return foundAny;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void PostProcessMan::GetNetworkPostEffectsList(int whichScreen, std::list<PostEffect> & outputList) {
-		ScreenRelativeEffectsMutex.at(whichScreen).lock();
-		outputList.clear();
-		for (const PostEffect &postEffect : m_ScreenRelativeEffects.at(whichScreen)) {
-			outputList.push_back(PostEffect(postEffect.m_Pos, postEffect.m_Bitmap, postEffect.m_BitmapHash, postEffect.m_Strength, postEffect.m_Angle));
-		}
-		ScreenRelativeEffectsMutex.at(whichScreen).unlock();
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void PostProcessMan::SetNetworkPostEffectsList(int whichScreen, std::list<PostEffect> & inputList) {
-		ScreenRelativeEffectsMutex.at(whichScreen).lock();
-		m_ScreenRelativeEffects.at(whichScreen).clear();
-		for (const PostEffect &postEffect : inputList) {
-			m_ScreenRelativeEffects.at(whichScreen).push_back(PostEffect(postEffect.m_Pos, postEffect.m_Bitmap, postEffect.m_BitmapHash, postEffect.m_Strength, postEffect.m_Angle));
-		}
-		ScreenRelativeEffectsMutex.at(whichScreen).unlock();
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

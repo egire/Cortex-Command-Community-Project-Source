@@ -163,22 +163,6 @@ namespace RTE {
 		bool GetGlowAreasWrapped(const Vector &boxPos, int boxWidth, int boxHeight, std::list<Box> &areaList) const;
 #pragma endregion
 
-#pragma region Network Post Effect Handling
-		/// <summary>
-		/// Copies the specified player's screen relative post effects list of this PostProcessMan to the referenced list. Used for sending post effect data over the network.
-		/// </summary>
-		/// <param name="whichScreen">Which player screen to get list for.</param>
-		/// <param name="outputList">Reference to the list of post effects to copy into.</param>
-		void GetNetworkPostEffectsList(int whichScreen, std::list<PostEffect> &outputList);
-
-		/// <summary>
-		/// Copies the player's screen relative post effects from the referenced list to the list of this PostProcessMan. Used for receiving post effect data over the network.
-		/// </summary>
-		/// <param name="whichScreen">Which player screen to set list for.</param>
-		/// <param name="inputList">Reference to the list of post effects to copy from.</param>
-		void SetNetworkPostEffectsList(int whichScreen, std::list<PostEffect> &inputList);
-#pragma endregion
-
 	protected:
 
 		std::list<PostEffect> m_PostScreenEffects; //!< List of effects to apply at the end of each frame. This list gets cleared out and re-filled each frame.
@@ -186,9 +170,6 @@ namespace RTE {
 
 		std::list<Box> m_PostScreenGlowBoxes; //!< List of areas that will be processed with glow.
 		std::list<IntRect> m_GlowAreas; //!< All the areas to do post glow pixel effects on, in scene coordinates.
-
-		std::array<std::list<PostEffect>, c_MaxScreenCount> m_ScreenRelativeEffects; //!< List of screen relative effects for each player in online multiplayer.
-		std::array<std::mutex, c_MaxScreenCount> ScreenRelativeEffectsMutex; //!< Mutex for the ScreenRelativeEffects list when accessed by multiple threads in online multiplayer.
 
 		BITMAP *m_YellowGlow; //!< Bitmap for the yellow dot glow effect.
 		BITMAP *m_RedGlow; //!< Bitmap for the red dot glow effect.
