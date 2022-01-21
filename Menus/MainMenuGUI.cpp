@@ -87,7 +87,6 @@ namespace RTE {
 
 		m_MainMenuButtons.at(MenuButton::MetaGameButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonMainToMetaGame"));
 		m_MainMenuButtons.at(MenuButton::ScenarioButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonMainToSkirmish"));
-		m_MainMenuButtons.at(MenuButton::MultiplayerButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonMainToMultiplayer"));
 		m_MainMenuButtons.at(MenuButton::SettingsButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonMainToOptions"));
 		m_MainMenuButtons.at(MenuButton::ModManagerButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonMainToModManager"));
 		m_MainMenuButtons.at(MenuButton::EditorsButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonMainToEditor"));
@@ -95,7 +94,7 @@ namespace RTE {
 		m_MainMenuButtons.at(MenuButton::QuitButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonQuit"));
 		m_MainMenuButtons.at(MenuButton::ResumeButton) = dynamic_cast<GUIButton *>(m_MainMenuScreenGUIControlManager->GetControl("ButtonResume"));
 
-		for (int mainScreenButton = 0; mainScreenButton < 9; ++mainScreenButton) {
+		for (int mainScreenButton = 0; mainScreenButton < 8; ++mainScreenButton) {
 			m_MainMenuButtons.at(mainScreenButton)->CenterInParent(true, false);
 			std::string buttonText = m_MainMenuButtons.at(mainScreenButton)->GetText();
 			std::transform(buttonText.begin(), buttonText.end(), buttonText.begin(), ::toupper);
@@ -200,7 +199,7 @@ namespace RTE {
 	void MainMenuGUI::ShowMainScreen() {
 		m_VersionLabel->SetVisible(true);
 
-		m_MainMenuScreens.at(MenuScreen::MainScreen)->Resize(300, 196);
+		m_MainMenuScreens.at(MenuScreen::MainScreen)->Resize(300, 176);
 		m_MainMenuScreens.at(MenuScreen::MainScreen)->SetVisible(true);
 
 		m_MainMenuButtons.at(MenuButton::BackToMainButton)->SetVisible(false);
@@ -430,10 +429,6 @@ namespace RTE {
 			}
 		} else if (guiEventControl == m_MainMenuButtons.at(MenuButton::ScenarioButton)) {
 			m_UpdateResult = MainMenuUpdateResult::ScenarioStarted;
-		} else if (guiEventControl == m_MainMenuButtons.at(MenuButton::MultiplayerButton)) {
-			m_UpdateResult = MainMenuUpdateResult::ActivityStarted;
-			g_GUISound.BackButtonPressSound()->Play();
-			g_ActivityMan.SetStartMultiplayerActivity();
 		} else if (guiEventControl == m_MainMenuButtons.at(MenuButton::SettingsButton)) {
 			SetActiveMenuScreen(MenuScreen::SettingsScreen);
 		} else if (guiEventControl == m_MainMenuButtons.at(MenuButton::EditorsButton)) {

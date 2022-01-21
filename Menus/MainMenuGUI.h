@@ -87,7 +87,6 @@ namespace RTE {
 		enum MenuButton {
 			MetaGameButton,
 			ScenarioButton,
-			MultiplayerButton,
 			SettingsButton,
 			ModManagerButton,
 			EditorsButton,
