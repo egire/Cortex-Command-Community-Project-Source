@@ -19,6 +19,10 @@
 /// Cortex Command Center - https://discord.gg/SdNnKJN
 /// </summary>
 
+#ifdef _WIN32
+#include "Windows.h"
+#endif
+
 #include "GUI.h"
 #include "AllegroInput.h"
 #include "AllegroScreen.h"
@@ -35,7 +39,6 @@
 #include "UInputMan.h"
 #include "PerformanceMan.h"
 #include "MetaMan.h"
-#include "NetworkServer.h"
 
 extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
 
@@ -52,8 +55,6 @@ namespace RTE {
 		g_SettingsMan.Initialize();
 
 		g_LuaMan.Initialize();
-		g_NetworkServer.Initialize();
-		g_NetworkClient.Initialize();
 		g_TimerMan.Initialize();
 		g_PerformanceMan.Initialize();
 		g_FrameMan.Initialize();
@@ -80,8 +81,6 @@ namespace RTE {
 	/// Destroys all the managers and frees all loaded data before termination.
 	/// </summary>
 	void DestroyManagers() {
-		g_NetworkClient.Destroy();
-		g_NetworkServer.Destroy();
 		g_MetaMan.Destroy();
 		g_MovableMan.Destroy();
 		g_SceneMan.Destroy();
@@ -131,15 +130,9 @@ namespace RTE {
 					singleModuleSet = true;
 				}
 			}
-			if (!launchModeSet) {
-				if (currentArg == "-server") {
-					g_NetworkServer.EnableServerMode();
-					g_NetworkServer.SetServerPort(!lastArg ? argValue[++i] : "8000");
-					launchModeSet = true;
-				} else if (!lastArg && currentArg == "-editor") {
-					g_ActivityMan.SetEditorToLaunch(argValue[++i]);
-					launchModeSet = true;
-				}
+			if (!launchModeSet && !lastArg && currentArg == "-editor") {
+				g_ActivityMan.SetEditorToLaunch(argValue[++i]);
+				launchModeSet = true;
 			}
 			++i;
 		}
@@ -200,11 +193,8 @@ namespace RTE {
 
 			g_TimerMan.Update();
 
-			bool serverUpdated = false;
-
 			// Simulation update, as many times as the fixed update step allows in the span since last frame draw.
 			while (g_TimerMan.TimeForSimUpdate()) {
-				serverUpdated = false;
 				g_PerformanceMan.NewPerformanceSample();
 
 				g_TimerMan.UpdateSim();
@@ -212,12 +202,6 @@ namespace RTE {
 				g_PerformanceMan.StartPerformanceMeasurement(PerformanceMan::SimTotal);
 
 				g_UInputMan.Update();
-
-				// It is vital that server is updated after input manager but before activity because input manager will clear received pressed and released events on next update.
-				if (g_NetworkServer.IsServerModeEnabled()) {
-					g_NetworkServer.Update(true);
-					serverUpdated = true;
-				}
 				g_FrameMan.Update();
 				g_LuaMan.Update();
 				g_PerformanceMan.StartPerformanceMeasurement(PerformanceMan::ActivityUpdate);
@@ -252,22 +236,6 @@ namespace RTE {
 				if (g_ActivityMan.ActivitySetToResume()) {
 					g_ActivityMan.ResumeActivity();
 					g_PerformanceMan.ResetFrameTimer();
-				}
-			}
-
-			if (g_NetworkServer.IsServerModeEnabled()) {
-				// Pause sim while we're waiting for scene transmission or scene will start changing before clients receive them and those changes will be lost.
-				g_TimerMan.PauseSim(!(g_NetworkServer.ReadyForSimulation() && g_ActivityMan.IsInActivity()));
-
-				if (!serverUpdated) { g_NetworkServer.Update(); }
-
-				if (g_NetworkServer.GetServerSimSleepWhenIdle()) {
-					long long ticksToSleep = g_TimerMan.GetTimeToSleep();
-					if (ticksToSleep > 0) {
-						double secsToSleep = static_cast<double>(ticksToSleep) / static_cast<double>(g_TimerMan.GetTicksPerSecond());
-						long long milisToSleep = static_cast<long long>(secsToSleep) * 1000;
-						std::this_thread::sleep_for(std::chrono::milliseconds(milisToSleep));
-					}
 				}
 			}
 			g_FrameMan.Draw();
