@@ -41,9 +41,7 @@ namespace RTE {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool ActivityMan::Initialize() {
-		if (g_NetworkServer.IsServerModeEnabled()) {
-			return SetStartMultiplayerServerOverview();
-		} else if (IsSetToLaunchIntoEditor()) {
+		if (IsSetToLaunchIntoEditor()) {
 			// Evaluate LaunchIntoEditor before LaunchIntoActivity so it takes priority when both are set, otherwise it is ignored and editor is never launched.
 			return SetStartEditorActivitySetToLaunchInto();
 		} else if (IsSetToLaunchIntoActivity()) {
@@ -113,44 +111,6 @@ namespace RTE {
 			m_LaunchIntoEditor = false;
 			return false;
 		}
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	bool ActivityMan::SetStartMultiplayerActivity() {
-		if (std::unique_ptr<MultiplayerGame> multiplayerGame = std::make_unique<MultiplayerGame>()) {
-			if (g_MetaMan.GameInProgress()) { g_MetaMan.EndGame(); }
-			g_SceneMan.SetSceneToLoad("Multiplayer Scene");
-			multiplayerGame->Create();
-			SetStartActivity(multiplayerGame.release());
-			m_ActivityNeedsRestart = true;
-			return true;
-		}
-		return false;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	bool ActivityMan::SetStartMultiplayerServerOverview() {
-		g_NetworkServer.Start();
-
-		if (std::unique_ptr<MultiplayerServerLobby> multiplayerServerLobby = std::make_unique<MultiplayerServerLobby>()) {
-			g_UInputMan.SetMultiplayerMode(true);
-			g_FrameMan.SetMultiplayerMode(true);
-			g_AudioMan.SetMultiplayerMode(true);
-			g_AudioMan.SetMasterMuted();
-			g_SceneMan.SetSceneToLoad("Multiplayer Scene");
-
-			multiplayerServerLobby->Create();
-			multiplayerServerLobby->ClearPlayers(true);
-			for (int playerAndTeamNum = Players::PlayerOne; playerAndTeamNum < Players::MaxPlayerCount; ++playerAndTeamNum) {
-				multiplayerServerLobby->AddPlayer(playerAndTeamNum, true, playerAndTeamNum, 0);
-			}
-			SetStartActivity(multiplayerServerLobby.release());
-			m_ActivityNeedsRestart = true;
-			return true;
-		}
-		return false;
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
