@@ -6,8 +6,6 @@
 #include "AudioMan.h"
 #include "PerformanceMan.h"
 #include "UInputMan.h"
-#include "NetworkClient.h"
-#include "NetworkServer.h"
 
 namespace RTE {
 
@@ -27,12 +25,6 @@ namespace RTE {
 		m_CrabBombThreshold = 42;
 		m_ShowEnemyHUD = true;
 		m_EnableSmartBuyMenuNavigation = true;
-
-		m_NetworkServerAddress = "127.0.0.1:8000";
-		m_PlayerNetworkName = "Dummy";
-		m_NATServiceAddress = "127.0.0.1:61111";
-		m_NATServerName = "DefaultServerName";
-		m_NATServerPassword = "DefaultServerPassword";
 
 		m_AllowSavingToBase = false;
 		m_ShowForeignItems = true;
@@ -122,7 +114,7 @@ namespace RTE {
 			reader >> g_AudioMan.m_SoundPanningEffectStrength;
 
 		//////////////////////////////////////////////////
-		//TODO These need to be removed when our soundscape is sorted out. They're only here temporarily to allow for easier tweaking by pawnis.
+		//TODO These need to be removed when our soundscape is sorted out. They're only here temporarily to allow for easier tweaking.
 		} else if (propName == "ListenerZOffset") {
 			reader >> g_AudioMan.m_ListenerZOffset;
 		} else if (propName == "MinimumDistanceForPanning") {
@@ -211,42 +203,6 @@ namespace RTE {
 			reader >> m_PrintDebugInfo;
 		} else if (propName == "MeasureModuleLoadTime") {
 			reader >> m_MeasureModuleLoadTime;
-		} else if (propName == "PlayerNetworkName") {
-			reader >> m_PlayerNetworkName;
-		} else if (propName == "NetworkServerName") {
-			reader >> m_NetworkServerAddress;
-		} else if (propName == "UseNATService") {
-			reader >> g_NetworkServer.m_UseNATService;
-		} else if (propName == "NATServiceAddress") {
-			reader >> m_NATServiceAddress;
-		} else if (propName == "NATServerName") {
-			reader >> m_NATServerName;
-		} else if (propName == "NATServerPassword") {
-			reader >> m_NATServerPassword;
-		} else if (propName == "ClientInputFps") {
-			reader >> g_NetworkClient.m_ClientInputFps;
-		} else if (propName == "ServerTransmitAsBoxes") {
-			reader >> g_NetworkServer.m_TransmitAsBoxes;
-		} else if (propName == "ServerBoxWidth") {
-			reader >> g_NetworkServer.m_BoxWidth;
-		} else if (propName == "ServerBoxHeight") {
-			reader >> g_NetworkServer.m_BoxHeight;
-		} else if (propName == "ServerUseHighCompression") {
-			reader >> g_NetworkServer.m_UseHighCompression;
-		} else if (propName == "ServerUseFastCompression") {
-			reader >> g_NetworkServer.m_UseFastCompression;
-		} else if (propName == "ServerHighCompressionLevel") {
-			reader >> g_NetworkServer.m_HighCompressionLevel;
-		} else if (propName == "ServerFastAccelerationFactor") {
-			reader >> g_NetworkServer.m_FastAccelerationFactor;
-		} else if (propName == "ServerUseInterlacing") {
-			reader >> g_NetworkServer.m_UseInterlacing;
-		} else if (propName == "ServerEncodingFps") {
-			reader >> g_NetworkServer.m_EncodingFps;
-		} else if (propName == "ServerSleepWhenIdle") {
-			reader >> g_NetworkServer.m_SleepWhenIdle;
-		} else if (propName == "ServerSimSleepWhenIdle") {
-			reader >> g_NetworkServer.m_SimSleepWhenIdle;
 		} else if (propName == "VisibleAssemblyGroup") {
 			m_VisibleAssemblyGroupsList.push_back(reader.ReadPropValue());
 		} else if (propName == "DisableMod") {
@@ -300,7 +256,7 @@ namespace RTE {
 		writer.NewPropertyWithValue("SoundPanningEffectStrength", g_AudioMan.m_SoundPanningEffectStrength);
 
 		//////////////////////////////////////////////////
-		//TODO These need to be removed when our soundscape is sorted out. They're only here temporarily to allow for easier tweaking by pawnis.
+		//TODO These need to be removed when our soundscape is sorted out. They're only here temporarily to allow for easier tweaking.
 		writer.NewPropertyWithValue("ListenerZOffset", g_AudioMan.m_ListenerZOffset);
 		writer.NewPropertyWithValue("MinimumDistanceForPanning", g_AudioMan.m_MinimumDistanceForPanning);
 		//////////////////////////////////////////////////
@@ -375,34 +331,6 @@ namespace RTE {
 		writer.NewPropertyWithValue("DrawPixelCheckVisualizations", g_SceneMan.m_DrawPixelCheckVisualizations);
 		writer.NewPropertyWithValue("PrintDebugInfo", m_PrintDebugInfo);
 		writer.NewPropertyWithValue("MeasureModuleLoadTime", m_MeasureModuleLoadTime);
-
-		writer.NewLine(false, 2);
-		writer.NewDivider(false);
-		writer.NewLineString("// Network Settings", false);
-		writer.NewLine(false);
-		writer.NewPropertyWithValue("PlayerNetworkName", m_PlayerNetworkName);
-		writer.NewPropertyWithValue("NetworkServerName", m_NetworkServerAddress);
-		writer.NewPropertyWithValue("UseNATService", g_NetworkServer.m_UseNATService);
-		writer.NewPropertyWithValue("NATServiceAddress", m_NATServiceAddress);
-		writer.NewPropertyWithValue("NATServerName", m_NATServerName);
-		writer.NewPropertyWithValue("NATServerPassword", m_NATServerPassword);
-
-		writer.NewLine(false, 2);
-		writer.NewDivider(false);
-		writer.NewLineString("// Advanced Network Settings", false);
-		writer.NewLine(false);
-		writer.NewPropertyWithValue("ClientInputFps", g_NetworkClient.m_ClientInputFps);
-		writer.NewPropertyWithValue("ServerTransmitAsBoxes", g_NetworkServer.m_TransmitAsBoxes);
-		writer.NewPropertyWithValue("ServerBoxWidth", g_NetworkServer.m_BoxWidth);
-		writer.NewPropertyWithValue("ServerBoxHeight", g_NetworkServer.m_BoxHeight);
-		writer.NewPropertyWithValue("ServerUseHighCompression", g_NetworkServer.m_UseHighCompression);
-		writer.NewPropertyWithValue("ServerUseFastCompression", g_NetworkServer.m_UseFastCompression);
-		writer.NewPropertyWithValue("ServerHighCompressionLevel", g_NetworkServer.m_HighCompressionLevel);
-		writer.NewPropertyWithValue("ServerFastAccelerationFactor", g_NetworkServer.m_FastAccelerationFactor);
-		writer.NewPropertyWithValue("ServerUseInterlacing", g_NetworkServer.m_UseInterlacing);
-		writer.NewPropertyWithValue("ServerEncodingFps", g_NetworkServer.m_EncodingFps);
-		writer.NewPropertyWithValue("ServerSleepWhenIdle", g_NetworkServer.m_SleepWhenIdle);
-		writer.NewPropertyWithValue("ServerSimSleepWhenIdle", g_NetworkServer.m_SimSleepWhenIdle);
 
 		if (!m_VisibleAssemblyGroupsList.empty()) {
 			writer.NewLine(false, 2);

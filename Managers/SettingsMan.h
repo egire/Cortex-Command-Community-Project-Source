@@ -180,68 +180,6 @@ namespace RTE {
 		void SetSmartBuyMenuNavigation(bool enable) { m_EnableSmartBuyMenuNavigation = enable; }
 #pragma endregion
 
-#pragma region Network Settings
-		/// <summary>
-		/// Gets the player name that is used in network multiplayer matches.
-		/// </summary>
-		/// <returns>String with the network player name.</returns>
-		std::string GetPlayerNetworkName() const { return m_PlayerNetworkName; }
-
-		/// <summary>
-		/// Sets the player name that will be used in network multiplayer matches.
-		/// </summary>
-		/// <param name="newName">String with the new player name to use.</param>
-		void SetPlayerNetworkName(const std::string &newName) { m_PlayerNetworkName = newName.empty() ? "Dummy" : newName; }
-
-		/// <summary>
-		/// Gets the LAN server address to connect to.
-		/// </summary>
-		/// <returns>The current LAN server address to connect to.</returns>
-		std::string GetNetworkServerAddress() const { return m_NetworkServerAddress; }
-
-		/// <summary>
-		/// Sets the LAN server address to connect to.
-		/// </summary>
-		/// <param name="newName">New LAN server address to connect to.</param>
-		void SetNetworkServerAddress(const std::string &newAddress) { m_NetworkServerAddress = newAddress.empty() ? "127.0.0.1:8000" : newAddress; }
-
-		/// <summary>
-		/// Gets the NAT punch-through server address.
-		/// </summary>
-		/// <returns>The current NAT punch-through server address to connect to.</returns>
-		std::string & GetNATServiceAddress() { return m_NATServiceAddress; }
-
-		/// <summary>
-		/// Sets the NAT punch-through server address.
-		/// </summary>
-		/// <param name="newValue">New NAT punch-through server address to connect to.</param>
-		void SetNATServiceAddress(const std::string &newAddress) { m_NATServiceAddress = newAddress.empty() ? "127.0.0.1:61111" : newAddress; }
-
-		/// <summary>
-		/// Gets the server name used when connecting via NAT punch-through service.
-		/// </summary>
-		/// <returns>Name of the NAT punch-through server.</returns>
-		std::string & GetNATServerName() { return m_NATServerName; }
-
-		/// <summary>
-		/// Sets the server name to use when connecting via NAT punch-through service.
-		/// </summary>
-		/// <param name="newValue">New NAT punch-through server name.</param>
-		void SetNATServerName(const std::string &newName) { m_NATServerName = newName.empty() ? "DefaultServerName" : newName; }
-
-		/// <summary>
-		/// Gets the server password to use when connecting via NAT punch-through service.
-		/// </summary>
-		/// <returns>The server password to use when connecting via NAT punch-through service.</returns>
-		std::string & GetNATServerPassword() { return m_NATServerPassword; }
-
-		/// <summary>
-		/// Sets the server password to use when connecting via NAT punch-through service.
-		/// </summary>
-		/// <param name="newValue">New password to use when connecting via NAT punch-through service.</param>
-		void SetNATServerPassword(const std::string &newValue) { m_NATServerPassword = newValue.empty() ? "DefaultServerPassword" : newValue; }
-#pragma endregion
-
 #pragma region Editor Settings
 		/// <summary>
 		/// Returns the list of visible assembly groups.
@@ -419,12 +357,6 @@ namespace RTE {
 		int m_CrabBombThreshold; //!< The number of crabs needed to be released at once to trigger the crab bomb effect.
 		bool m_ShowEnemyHUD; //!< Whether the HUD of enemy actors should be visible to the player.
 		bool m_EnableSmartBuyMenuNavigation; //!< Whether swapping to equipment mode and back should change active tabs in the BuyMenu.
-
-		std::string m_PlayerNetworkName; //!< Player name used in network multiplayer matches.
-		std::string m_NetworkServerAddress; //!< LAN server address to connect to.
-		std::string m_NATServiceAddress; //!< NAT punch-through server address.
-		std::string m_NATServerName; //!< Server name to use when connecting via NAT punch-through service.
-		std::string m_NATServerPassword; //!< Server password to use when connecting via NAT punch-through service.
 
 		bool m_AllowSavingToBase; //!< Whether editors will allow to select Base.rte as a module to save in.
 		bool m_ShowMetaScenes; //!< Show MetaScenes in editors and activities.
