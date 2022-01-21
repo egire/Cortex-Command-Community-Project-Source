@@ -34,58 +34,6 @@ namespace RTE {
 			PRIORITY_LOW = 256
 		};
 
-		/// <summary>
-		/// Music event states for sending music data from the server to clients during multiplayer games.
-		/// </summary>
-		enum NetworkMusicState {
-			MUSIC_PLAY = 0,
-			MUSIC_STOP,
-			MUSIC_SILENCE,
-			MUSIC_SET_PITCH
-		};
-
-		/// <summary>
-		/// The data struct used to send music data from the server to clients during multiplayer games.
-		/// </summary>
-		struct NetworkMusicData {
-			unsigned char State;
-			char Path[256];
-			int LoopsOrSilence;
-			float Position;
-			float Pitch;
-		};
-
-		/// <summary>
-		/// Sound event states for sending sound data from the server to clients during multiplayer games.
-		/// </summary>
-		enum NetworkSoundState {
-			SOUND_SET_GLOBAL_PITCH = 0,
-			SOUND_PLAY,
-			SOUND_STOP,
-			SOUND_SET_POSITION,
-			SOUND_SET_VOLUME,
-			SOUND_SET_PITCH,
-			SOUND_FADE_OUT
-		};
-
-		/// <summary>
-		/// The data struct used to send sound data from the server to clients during multiplayer games.
-		/// </summary>
-		struct NetworkSoundData {
-			unsigned char State;
-			std::size_t SoundFileHash;
-			int Channel;
-			bool Immobile;
-			float AttenuationStartDistance;
-			int Loops;
-			int Priority;
-			bool AffectedByGlobalPitch;
-			float Position[2];
-			float Volume;
-			float Pitch;
-			int FadeOutTime;
-		};
-
 #pragma region Creation
 		/// <summary>
 		/// Constructor method used to instantiate a AudioMan object in system memory.
@@ -124,7 +72,7 @@ namespace RTE {
 		/// Gets the audio management system object used for playing all audio.
 		/// </summary>
 		/// <returns>The audio management system object used by AudioMan for playing audio.</returns>
-		FMOD::System *GetAudioSystem() const { return m_AudioSystem; }
+		FMOD::System * GetAudioSystem() const { return m_AudioSystem; }
 
 		/// <summary>
 		/// Reports whether audio is enabled.
@@ -137,7 +85,7 @@ namespace RTE {
 		/// </summary>
 		/// <param name="outVirtualChannelCount">The out-parameter that will hold the virtual channel count.</param>
 		/// <param name="outRealChannelCount">The out-parameter that will hold the real channel count.</param>
-		/// <returns>Whether or not the playing channel count was succesfully gotten.</returns>
+		/// <returns>Whether or not the playing channel count was successfully gotten.</returns>
 		bool GetPlayingChannelCount(int *outVirtualChannelCount, int *outRealChannelCount) const { return m_AudioSystem->getChannelsPlaying(outVirtualChannelCount, outRealChannelCount) == FMOD_OK; }
 
 		/// <summary>
@@ -345,14 +293,14 @@ namespace RTE {
 		/// </summary>
 		/// <param name="filePath">The path to the sound file to play.</param>
 		/// <returns>The new SoundContainer being played. OWNERSHIP IS TRANSFERRED!</returns>
-		SoundContainer *PlaySound(const std::string &filePath) { return PlaySound(filePath, Vector(), -1); }
+		SoundContainer * PlaySound(const std::string &filePath) { return PlaySound(filePath, Vector(), -1); }
 
 		/// <summary>
 		/// Starts playing a certain sound file at a certain position for all players.
 		/// </summary>
 		/// <param name="filePath">The path to the sound file to play.</param>
 		/// <returns>The new SoundContainer being played. OWNERSHIP IS TRANSFERRED!</returns>
-		SoundContainer *PlaySound(const std::string &filePath, const Vector &position) { return PlaySound(filePath, position, -1); }
+		SoundContainer * PlaySound(const std::string &filePath, const Vector &position) { return PlaySound(filePath, position, -1); }
 
 		/// <summary>
 		/// Starts playing a certain sound file at a certain position for a certain player.
@@ -361,67 +309,7 @@ namespace RTE {
 		/// <param name="position">The position at which to play the SoundContainer's sounds.</param>
 		/// <param name="player">Which player to play the SoundContainer's sounds for, -1 means all players.</param>
 		/// <returns>The new SoundContainer being played. OWNERSHIP IS TRANSFERRED!</returns>
-		SoundContainer *PlaySound(const std::string &filePath, const Vector &position, int player);
-#pragma endregion
-
-#pragma region Network Audio Handling
-		/// <summary>
-		/// Returns true if manager is in multiplayer mode.
-		/// </summary>
-		/// <returns>True if in multiplayer mode.</returns>
-		bool IsInMultiplayerMode() const { return m_IsInMultiplayerMode; }
-
-		/// <summary>
-		/// Sets the multiplayer mode flag.
-		/// </summary>
-		/// <param name="value">Whether this manager should operate in multiplayer mode.</param>
-		void SetMultiplayerMode(bool value) { m_IsInMultiplayerMode = value; }
-
-		/// <summary>
-		/// Fills the list with music events happened for the specified network player.
-		/// </summary>
-		/// <param name="player">Player to get events for.</param>
-		/// <param name="list">List with events for this player.</param>
-		void GetMusicEvents(int player, std::list<NetworkMusicData> &list);
-
-		/// <summary>
-		/// Adds the music event to internal list of music events for the specified player.
-		/// </summary>
-		/// <param name="player">Player(s) for which the event happened.</param>
-		/// <param name="state">NetworkMusicState for the event.</param>
-		/// <param name="filepath">Music file path to transmit to client.</param>
-		/// <param name="loops">LoopsOrSilence counter or, if state is silence, the length of the silence.</param>
-		/// <param name="position">Music playback position.</param>
-		/// <param name="pitch">Pitch value.</param>
-		void RegisterMusicEvent(int player, NetworkMusicState state, const char *filepath, int loopsOrSilence = 0, float position = 0, float pitch = 1.0F);
-
-		/// <summary>
-		/// Clears the list of current Music events for the target player.
-		/// </summary>
-		/// <param name="player">Player to clear music events for. -1 clears for all players</param>
-		void ClearMusicEvents(int player);
-
-		/// <summary>
-		/// Fills the list with sound events happened for the specified network player.
-		/// </summary>
-		/// <param name="player">Player to get events for.</param>
-		/// <param name="list">List with events for this player.</param>
-		void GetSoundEvents(int player, std::list<NetworkSoundData> &list);
-
-		/// <summary>
-		/// Adds the sound event to the internal list of sound events for the specified player.
-		/// </summary>
-		/// <param name="player">Player(s) for which the event happened.</param>
-		/// <param name="state">NetworkSoundState for the event.</param>
-		/// <param name="soundContainer">A pointer to the SoundContainer this event is happening to, or a null pointer for global events.</param>
-		/// <param name="fadeOutTime">THe amount of time, in MS, to fade out over. This data isn't contained in SoundContainer, so it needs to be passed in separately.</param>
-		void RegisterSoundEvent(int player, NetworkSoundState state, const SoundContainer *soundContainer, int fadeOutTime = 0);
-
-		/// <summary>
-		/// Clears the list of current Sound events for the target player.
-		/// </summary>
-		/// <param name="player">Player to clear sound events for. -1 clears for all players.</param>
-		void ClearSoundEvents(int player);
+		SoundContainer * PlaySound(const std::string &filePath, const Vector &position, int player);
 #pragma endregion
 
 	protected:
@@ -451,7 +339,7 @@ namespace RTE {
 		float m_SoundPanningEffectStrength; //!< The strength of the sound panning effect, 0 (no panning) - 1 (full panning).
 
 		//////////////////////////////////////////////////
-		//TODO These need to be removed when our soundscape is sorted out. They're only here temporarily to allow for easier tweaking by pawnis.
+		//TODO These need to be removed when our soundscape is sorted out. They're only here temporarily to allow for easier tweaking.
 		float m_ListenerZOffset;
 		float m_MinimumDistanceForPanning;
 		//////////////////////////////////////////////////
@@ -459,12 +347,6 @@ namespace RTE {
 		std::string m_MusicPath; //!< The path to the last played music stream.
 		std::list<std::string> m_MusicPlayList; //!< Playlist of paths to music to play after the current non looping one is done.
 		Timer m_SilenceTimer; //!< Timer for measuring silences between songs.
-
-		bool m_IsInMultiplayerMode; //!< If true then the server is in multiplayer mode and will register sound and music events into internal lists.
-		std::list<NetworkSoundData> m_SoundEvents[c_MaxClients]; //!< Lists of per player sound events.
-		std::list<NetworkMusicData> m_MusicEvents[c_MaxClients]; //!< Lists of per player music events.
-
-		std::mutex g_SoundEventsListMutex[c_MaxClients]; //!< A list for locking sound events for multiplayer to avoid race conditions and other such problems.
 
 	private:
 
@@ -526,7 +408,7 @@ namespace RTE {
 		/// </summary>
 		/// <param name="soundChannel">The channel whose position should be set or updated.</param>
 		/// <param name="positionToUse">An optional position to set for this sound channel. Done this way to save setting and resetting data in FMOD.</param>
-		/// <returns>Whether the channel's position was succesfully set.</returns>
+		/// <returns>Whether the channel's position was successfully set.</returns>
 		FMOD_RESULT UpdatePositionalEffectsForSoundChannel(FMOD::Channel *soundChannel, const FMOD_VECTOR *positionToUse = nullptr) const;
 #pragma endregion
 
