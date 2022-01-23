@@ -59,7 +59,7 @@ namespace RTE {
 	};
 
 	/// <summary>
-	/// A class controlling MovableObjects through either player input, networking, scripting, AI, etc.
+	/// A class controlling MovableObjects through either player input, scripting, AI, etc.
 	/// </summary>
 	class Controller {
 
@@ -74,7 +74,6 @@ namespace RTE {
 			CIM_DISABLED = 0,
 			CIM_PLAYER,
 			CIM_AI,
-			CIM_NETWORK,
 			CIM_INPUTMODECOUNT
 		};
 

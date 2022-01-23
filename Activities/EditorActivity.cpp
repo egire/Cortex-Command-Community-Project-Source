@@ -303,7 +303,7 @@ void EditorActivity::Update()
                 UpdateNewDialog();
                 // Set the mouse cursor free
                 m_pGUIController->EnableMouse(true);
-                g_UInputMan.TrapMousePos(false, 0);
+                g_UInputMan.TrapMousePos(false);
                 // Show/hide relevant GUI elements
                 m_pNewDialogBox->SetVisible(true);
                 m_ModeChange = false;
@@ -325,7 +325,7 @@ void EditorActivity::Update()
                 UpdateLoadDialog();
                 // Set the mouse cursor free
                 m_pGUIController->EnableMouse(true);
-                g_UInputMan.TrapMousePos(false, 0);
+                g_UInputMan.TrapMousePos(false);
                 // Show/hide relevant GUI elements
                 m_pLoadDialogBox->SetVisible(true);
                 m_ModeChange = false;
@@ -341,7 +341,7 @@ void EditorActivity::Update()
             g_UInputMan.DisableKeys(true);
             // Set the mouse cursor free
             m_pGUIController->EnableMouse(true);
-            g_UInputMan.TrapMousePos(false, 0);
+            g_UInputMan.TrapMousePos(false);
             // Show/hide relevant GUI elements
             m_pSaveDialogBox->SetVisible(true);
             m_ModeChange = false;
@@ -354,7 +354,7 @@ void EditorActivity::Update()
             UpdateChangesDialog();
             // Set the mouse cursor free
             m_pGUIController->EnableMouse(true);
-            g_UInputMan.TrapMousePos(false, 0);
+            g_UInputMan.TrapMousePos(false);
             // Show/hide relevant GUI elements
             m_pChangesDialogBox->SetVisible(true);
             m_ModeChange = false;
@@ -367,7 +367,7 @@ void EditorActivity::Update()
             UpdateOverwriteDialog();
             // Set the mouse cursor free
             m_pGUIController->EnableMouse(true);
-            g_UInputMan.TrapMousePos(false, 0);
+            g_UInputMan.TrapMousePos(false);
             // Show/hide relevant GUI elements
             m_pOverwriteDialogBox->SetVisible(true);
             m_ModeChange = false;

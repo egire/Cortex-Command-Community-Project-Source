@@ -104,7 +104,6 @@ namespace RTE {
 			luabind::value("CIM_DISABLED", Controller::InputMode::CIM_DISABLED),
 			luabind::value("CIM_PLAYER", Controller::InputMode::CIM_PLAYER),
 			luabind::value("CIM_AI", Controller::InputMode::CIM_AI),
-			luabind::value("CIM_NETWORK", Controller::InputMode::CIM_NETWORK),
 			luabind::value("CIM_INPUTMODECOUNT", Controller::InputMode::CIM_INPUTMODECOUNT)
 		];
 	}

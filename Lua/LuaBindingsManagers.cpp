@@ -378,10 +378,6 @@ namespace RTE {
 		.def("AnyJoyButtonPress", &UInputMan::AnyJoyButtonPress)
 		.def("AnyInput", &UInputMan::AnyKeyOrJoyInput)
 		.def("AnyPress", &UInputMan::AnyPress)
-		.def("AnyStartPress", &UInputMan::AnyStartPress)
-
-		.def("MouseButtonPressed", &MouseButtonPressed)
-		.def("MouseButtonReleased", &MouseButtonReleased)
-		.def("MouseButtonHeld", &MouseButtonHeld);
+		.def("AnyStartPress", &UInputMan::AnyStartPress);
 	}
 }

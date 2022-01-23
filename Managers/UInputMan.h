@@ -88,7 +88,7 @@ namespace RTE {
 		/// </summary>
 		/// <param name="whichPlayer">Which player to get the scheme for.</param>
 		/// <returns>A pointer to the requested player's control scheme. Ownership is NOT transferred!</returns>
-		InputScheme * GetControlScheme(int whichPlayer) { return IsInMultiplayerMode() ? &m_ControlScheme.at(Players::PlayerOne) : &m_ControlScheme.at(whichPlayer); }
+		InputScheme * GetControlScheme(int whichPlayer) { return &m_ControlScheme.at(whichPlayer); }
 
 		/// <summary>
 		/// Get the current device Icon of a specific player's scheme.
@@ -287,15 +287,13 @@ namespace RTE {
 		/// Set the mouse's analog emulation output to be of a specific normalized magnitude.
 		/// </summary>
 		/// <param name="magCap">The normalized magnitude, between 0 and 1.0.</param>
-		/// <param name="whichPlayer">Which player to set magnitude for. Only relevant when in online multiplayer mode.</param>
-		void SetMouseValueMagnitude(float magCap, int whichPlayer = Players::NoPlayer);
+		void SetMouseValueMagnitude(float magCap);
 
 		/// <summary>
-		/// Sets the absolute screen position of the mouse cursor.
+		/// Sets the absolute screen position of the mouse cursor. Only the player with actual control over the mouse will be affected.
 		/// </summary>
 		/// <param name="newPos">Where to place the mouse.</param>
-		/// <param name="whichPlayer">Which player is trying to control the mouse. Only the player with actual control over the mouse will be affected. -1 means do it regardless of player.</param>
-		void SetMousePos(Vector &newPos, int whichPlayer = -1) const;
+		void SetMousePos(Vector &newPos) const;
 
 		/// <summary>
 		/// Gets mouse sensitivity.
@@ -313,25 +311,22 @@ namespace RTE {
 		/// Gets whether a mouse button is being held down right now.
 		/// </summary>
 		/// <param name="whichButton">Which button to check for.</param>
-		/// <param name="whichPlayer">Which player to check for.</param>
 		/// <returns>Whether the mouse button is held or not.</returns>
-		bool MouseButtonHeld(int whichButton, int whichPlayer = Players::PlayerOne) const { return GetMouseButtonState(whichPlayer, whichButton, InputState::Held); }
+		bool MouseButtonHeld(int whichButton) const { return GetMouseButtonState(whichButton, InputState::Held); }
 
 		/// <summary>
 		/// Gets whether a mouse button was pressed between the last update and the one previous to it.
 		/// </summary>
 		/// <param name="whichButton">Which button to check for.</param>
-		/// <param name="whichPlayer">Which player to check for.</param>
 		/// <returns>Whether the mouse button is pressed or not.</returns>
-		bool MouseButtonPressed(int whichButton, int whichPlayer = Players::PlayerOne) const { return GetMouseButtonState(whichPlayer, whichButton, InputState::Pressed); }
+		bool MouseButtonPressed(int whichButton) const { return GetMouseButtonState(whichButton, InputState::Pressed); }
 
 		/// <summary>
 		/// Gets whether a mouse button was released between the last update and the one previous to it.
 		/// </summary>
 		/// <param name="whichButton">Which button to check for.</param>
-		/// <param name="whichPlayer">Which player to check for.</param>
 		/// <returns>Whether the mouse button is released or not.</returns>
-		bool MouseButtonReleased(int whichButton, int whichPlayer = Players::PlayerOne) const { return GetMouseButtonState(whichPlayer, whichButton, InputState::Released); }
+		bool MouseButtonReleased(int whichButton) const { return GetMouseButtonState(whichButton, InputState::Released); }
 
 		/// <summary>
 		/// Gets whether the mouse wheel has been moved past the threshold limit in either direction this frame.
@@ -340,40 +335,26 @@ namespace RTE {
 		int MouseWheelMoved() const { return m_MouseWheelChange; }
 
 		/// <summary>
-		/// Gets the relative mouse wheel position for the specified player.
-		/// </summary>
-		/// <param name="player">The player to get mouse wheel position for.</param>
-		/// <returns>The relative mouse wheel position for the specified player.</returns>
-		int MouseWheelMovedByPlayer(int player) const {
-			return (IsInMultiplayerMode() && player >= Players::PlayerOne && player < Players::MaxPlayerCount) ? m_NetworkMouseWheelState[player] : m_MouseWheelChange;
-		}
-
-		/// <summary>
 		/// Return true if there are any mouse button presses at all.
 		/// </summary>
 		/// <returns>Whether any mouse buttons have been pressed at all since last frame.</returns>
 		bool AnyMouseButtonPress() const;
 
 		/// <summary>
-		/// Sets the mouse to be trapped in the middle of the screen so it doesn't go out and click on other windows etc.
+		/// Sets the mouse to be trapped in the middle of the screen so it doesn't go out and click on other windows etc. Only the player with actual control over the mouse will be affected.
 		/// This is usually used when the cursor is invisible and only relative mouse movements are used.
 		/// </summary>
 		/// <param name="trap">Whether to trap the mouse or not.</param>
-		/// <param name="whichPlayer">
-		/// Which player is trying to control the mouse.
-		/// Only the player with actual control over the mouse will affect its trapping here. -1 means change mouse trapping regardless of player.
-		/// </param>
-		void TrapMousePos(bool trap = true, int whichPlayer = -1);
+		void TrapMousePos(bool trap = true) { m_TrapMousePos = trap; }
 
 		/// <summary>
-		/// Forces the mouse within a box on the screen.
+		/// Forces the mouse within a box on the screen. Only the player with actual control over the mouse will be affected.
 		/// </summary>
 		/// <param name="x">X value of the top left corner of the screen box to keep the mouse within, in screen coordinates.</param>
 		/// <param name="y">Y value of the top left corner of the screen box to keep the mouse within, in screen coordinates.</param>
 		/// <param name="width">The width of the box.</param>
 		/// <param name="height">The height of the box.</param>
-		/// <param name="whichPlayer">Which player is trying to control the mouse. Only the player with actual control over the mouse will be affected. -1 means do it regardless of player.</param>
-		void ForceMouseWithinBox(int x, int y, int width, int height, int whichPlayer = -1) const;
+		void ForceMouseWithinBox(int x, int y, int width, int height) const;
 
 		/// <summary>
 		/// Forces the mouse within a specific player's screen area.
@@ -511,108 +492,6 @@ namespace RTE {
 		bool AnyJoyButtonPress(int whichJoy) const;
 #pragma endregion
 
-#pragma region Network Handling
-		/// <summary>
-		/// Returns true if manager is in multiplayer mode.
-		/// </summary>
-		/// <returns>True if in multiplayer mode.</returns>
-		bool IsInMultiplayerMode() const { return m_OverrideInput; }
-
-		/// <summary>
-		/// Sets the multiplayer mode flag.
-		/// </summary>
-		/// <param name="value">Whether this manager should operate in multiplayer mode.</param>
-		void SetMultiplayerMode(bool value) { m_OverrideInput = value; }
-
-		/// <summary>
-		/// Gets the position of the mouse for a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">The player to get for.</param>
-		/// <returns>The position of the mouse for the specified player</returns>
-		Vector GetNetworkAccumulatedRawMouseMovement(int player);
-
-		/// <summary>
-		/// Sets the position of the mouse for a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">The player to set for.</param>
-		/// <param name="input">The new position of the mouse.</param>
-		void SetNetworkMouseMovement(int player, const Vector &input) { m_NetworkAccumulatedRawMouseMovement[player] = input; }
-
-		/// <summary>
-		/// Sets whether an input element is held by a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for.</param>
-		/// <param name="element">Which input element to set for.</param>
-		/// <param name="state">The new state of the input element. True or false.</param>
-		void SetNetworkInputElementHeldState(int player, int element, bool state) { SetNetworkInputElementState(player, element, InputState::Held, state); }
-
-		/// <summary>
-		/// Sets whether an input element is pressed by a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for.</param>
-		/// <param name="element">Which input element to set for.</param>
-		/// <param name="state">The new state of the input element. True or false.</param>
-		void SetNetworkInputElementPressedState(int player, int element, bool state) { SetNetworkInputElementState(player, element, InputState::Pressed, state); }
-
-		/// <summary>
-		/// Sets whether an input element is released by a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for.</param>
-		/// <param name="element">Which input element to set for.</param>
-		/// <param name="state">The new state of the input element. True or false.</param>
-		void SetNetworkInputElementReleasedState(int player, int element, bool state) { SetNetworkInputElementState(player, element, InputState::Released, state); }
-
-		/// <summary>
-		/// Sets whether a mouse button is held by a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for.</param>
-		/// <param name="whichButton">Which mouse button to set for.</param>
-		/// <param name="state">The new state of the mouse button. True or false.</param>
-		void SetNetworkMouseButtonHeldState(int player, int whichButton, bool state) { SetNetworkMouseButtonState(player, whichButton, InputState::Held, state); }
-
-		/// <summary>
-		/// Sets whether a mouse button is pressed by a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for.</param>
-		/// <param name="whichButton">Which mouse button to set for.</param>
-		/// <param name="state">The new state of the mouse button. True or false.</param>
-		void SetNetworkMouseButtonPressedState(int player, int whichButton, bool state) { SetNetworkMouseButtonState(player, whichButton, InputState::Pressed, state); }
-
-		/// <summary>
-		/// Sets whether a mouse button is released by a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for.</param>
-		/// <param name="whichButton">Which mouse button to set for.</param>
-		/// <param name="state">The new state of the mouse button. True or false.</param>
-		void SetNetworkMouseButtonReleasedState(int player, int whichButton, bool state) { SetNetworkMouseButtonState(player, whichButton, InputState::Released, state); }
-
-		/// <summary>
-		/// Sets the state of the mouse wheel for a player during network multiplayer.
-		/// </summary>
-		/// <param name="player">The player to set for.</param>
-		/// <param name="state">The new state of the mouse wheel.</param>
-		void SetNetworkMouseWheelState(int player, int state) { if (player >= Players::PlayerOne && player < Players::MaxPlayerCount) { m_NetworkMouseWheelState[player] = state; } }
-
-		/// <summary>
-		/// Gets whether the specified input element is pressed during network multiplayer.
-		/// </summary>
-		/// <param name="element">The input element to check for.</param>
-		/// <returns>Whether the specified input element is pressed or not.</returns>
-		bool NetworkAccumulatedElementPressed(int element) const { return NetworkAccumulatedElementState(element, InputState::Pressed); }
-
-		/// <summary>
-		/// Gets whether the specified input element is released during network multiplayer.
-		/// </summary>
-		/// <param name="element">The input element to check for.</param>
-		/// <returns>Whether the specified input element is released or not.</returns>
-		bool NetworkAccumulatedElementReleased(int element) const { return NetworkAccumulatedElementState(element, InputState::Released); }
-
-		/// <summary>
-		/// Clears all the accumulated input element states.
-		/// </summary>
-		void ClearNetworkAccumulatedStates();
-#pragma endregion
-
 	protected:
 
 		/// <summary>
@@ -631,8 +510,6 @@ namespace RTE {
 
 		static JOYSTICK_INFO s_PrevJoystickStates[Players::MaxPlayerCount]; //!< Joystick states as they were the previous update.
 		static JOYSTICK_INFO s_ChangedJoystickStates[Players::MaxPlayerCount]; //!< Joystick states that have changed.
-
-		bool m_OverrideInput; //!< If true then this instance operates in multiplayer mode and the input is overridden by network input.
 
 		std::array<InputScheme, Players::MaxPlayerCount> m_ControlScheme; //!< Which control scheme is being used by each player.
 		const Icon *m_DeviceIcons[InputDevice::DEVICE_COUNT]; //!< The Icons representing all different devices.
@@ -655,16 +532,6 @@ namespace RTE {
 		/// This is to avoid having the window fly away because the user clicked the title bar.
 		/// </summary>
 		bool m_PrepareToEnableMouseMoving;
- 
-		bool m_NetworkAccumulatedElementState[InputElements::INPUT_COUNT][InputState::InputStateCount]; //!< The state of an input element during network multiplayer.
-		bool m_NetworkInputElementState[Players::MaxPlayerCount][InputElements::INPUT_COUNT][InputState::InputStateCount]; //!< The state of a player's input element during network multiplayer.
-		bool m_NetworkMouseButtonState[Players::MaxPlayerCount][MouseButtons::MAX_MOUSE_BUTTONS][InputState::InputStateCount]; //!< The state of a player's mouse button during network multiplayer. 
-
-		Vector m_NetworkAccumulatedRawMouseMovement[Players::MaxPlayerCount]; //!< The position of the mouse for each player during network multiplayer.
-		Vector m_NetworkAnalogMoveData[Players::MaxPlayerCount]; //!< Mouse analog movement data for each player during network multiplayer. 
-		int m_NetworkMouseWheelState[Players::MaxPlayerCount]; //!< The position of a player's mouse wheel during network multiplayer.
-
-		bool m_TrapMousePosPerPlayer[Players::MaxPlayerCount]; //!< Whether to trap the mouse position to the middle of the screen for each player during network multiplayer.
 
 	private:
 
@@ -697,11 +564,10 @@ namespace RTE {
 		/// <summary>
 		/// Gets whether a mouse button is in the specified state.
 		/// </summary>
-		/// <param name="whichPlayer">Which player to check for. See Players enumeration.</param>
 		/// <param name="whichButton">Which mouse button to check for. See MouseButtons enumeration.</param>
 		/// <param name="whichState">Which state to check for. See InputState enumeration.</param>
 		/// <returns>Whether the mouse button is in the specified state or not.</returns>
-		bool GetMouseButtonState(int whichPlayer, int whichButton, InputState whichState) const;
+		bool GetMouseButtonState(int whichButton, InputState whichState) const;
 
 		/// <summary>
 		/// Gets whether a joystick button is in the specified state.
@@ -722,42 +588,6 @@ namespace RTE {
 		/// <param name="whichState">Which state to check for. See InputState enumeration.</param>
 		/// <returns>Whether the joystick stick axis is in the specified state or not.</returns>
 		bool GetJoystickDirectionState(int whichJoy, int whichStick, int whichAxis, int whichDir, InputState whichState) const;
-
-		/// <summary>
-		/// Sets an input element of a player to the specified state during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for. See Players enumeration.</param>
-		/// <param name="element">Which element to set. See InputElements enumeration.</param>
-		/// <param name="whichState">Which input state to set. See InputState enumeration.</param>
-		/// <param name="newState">The new state of the specified InputState. True or false.</param>
-		void SetNetworkInputElementState(int player, int element, InputState whichState, bool newState) {
-			if (element >= InputElements::INPUT_L_UP && element < InputElements::INPUT_COUNT && player >= Players::PlayerOne && player < Players::MaxPlayerCount) {
-				m_NetworkInputElementState[player][element][whichState] = newState;
-			}
-		}
-
-		/// <summary>
-		/// Sets a mouse button for a player to the specified state during network multiplayer.
-		/// </summary>
-		/// <param name="player">Which player to set for. See Players enumeration.</param>
-		/// <param name="whichButton">Which mouse button to set for. See MouseButtons enumeration.</param>
-		/// <param name="whichState">Which input state to set. See InputState enumeration.</param>
-		/// <param name="newState">The new state of the specified InputState. True or false.</param>
-		void SetNetworkMouseButtonState(int player, int whichButton, InputState whichState, bool newState) {
-			if (whichButton >= MouseButtons::MOUSE_LEFT && whichButton < MouseButtons::MAX_MOUSE_BUTTONS && player >= Players::PlayerOne && player < Players::MaxPlayerCount) {
-				m_NetworkMouseButtonState[player][whichButton][whichState] = newState;
-			}
-		}
-
-		/// <summary>
-		/// Gets whether an input element is in the specified state during network multiplayer.
-		/// </summary>
-		/// <param name="element">Which element to check for. See InputElements enumeration.</param>
-		/// <param name="whichState">Which state to check for. See InputState enumeration.</param>
-		/// <returns>Whether the element is in the specified state or not.</returns>
-		bool NetworkAccumulatedElementState(int element, InputState whichState) const {
-			return (element < InputElements::INPUT_L_UP || element >= InputElements::INPUT_COUNT) ? false : m_NetworkAccumulatedElementState[element][whichState];
-		}
 #pragma endregion
 
 #pragma region Update Breakdown
@@ -765,11 +595,6 @@ namespace RTE {
 		/// Capture and handle special key shortcuts and combinations. This is called from Update().
 		/// </summary>
 		void HandleSpecialInput();
-
-		/// <summary>
-		/// Handles the mouse input in network multiplayer. This is called from Update().
-		/// </summary>
-		void UpdateNetworkMouseMovement();
 
 		/// <summary>
 		/// Handles the mouse input. This is called from Update().

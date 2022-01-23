@@ -547,7 +547,7 @@ void SceneEditorGUI::Update()
         m_DrawCurrentObject = true;
 
         // Trap the mouse cursor
-        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
+        g_UInputMan.TrapMousePos(true);
 
         // Move the cursor according to analog or mouse input
         if (!analogInput.IsZero())
@@ -673,7 +673,7 @@ void SceneEditorGUI::Update()
         m_DrawCurrentObject = true;
 
         // Trap the mouse cursor
-        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
+        g_UInputMan.TrapMousePos(true);
 
         // Move the cursor according to analog or mouse input
         if (!analogInput.IsZero())
@@ -1188,7 +1188,7 @@ void SceneEditorGUI::Update()
         m_DrawCurrentObject = false;
 
         // Trap the mouse cursor
-        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
+        g_UInputMan.TrapMousePos(true);
 
         // Move the cursor according to analog or mouse input
         if (!analogInput.IsZero())

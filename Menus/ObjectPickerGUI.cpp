@@ -125,9 +125,9 @@ namespace RTE {
 	void ObjectPickerGUI::SetEnabled(bool enable) {
 		if (enable && m_PickerState != PickerState::Enabled && m_PickerState != PickerState::Enabling) {
 			m_PickerState = PickerState::Enabling;
-			g_UInputMan.TrapMousePos(false, m_Controller->GetPlayer());
+			g_UInputMan.TrapMousePos(false);
 			m_CursorPos.SetXY(static_cast<float>(g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer()) / 2), static_cast<float>(g_FrameMan.GetPlayerFrameBufferHeight(m_Controller->GetPlayer()) / 2));
-			g_UInputMan.SetMousePos(m_CursorPos, m_Controller->GetPlayer());
+			g_UInputMan.SetMousePos(m_CursorPos);
 
 			SetListFocus(m_ObjectsList->GetItemList()->empty() ? PickerFocus::GroupList : PickerFocus::ObjectList);
 
@@ -137,7 +137,7 @@ namespace RTE {
 			g_GUISound.EnterMenuSound()->Play(m_Controller->GetPlayer());
 		} else if (!enable && m_PickerState != PickerState::Disabled && m_PickerState != PickerState::Disabling) {
 			m_PickerState = PickerState::Disabling;
-			g_UInputMan.TrapMousePos(true, m_Controller->GetPlayer());
+			g_UInputMan.TrapMousePos(true);
 			g_GUISound.ExitMenuSound()->Play(m_Controller->GetPlayer());
 		}
 	}

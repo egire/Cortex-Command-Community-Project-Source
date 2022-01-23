@@ -553,12 +553,12 @@ void BuyMenuGUI::SetEnabled(bool enable)
         m_RepeatStartTimer.Reset();
         m_RepeatTimer.Reset();
         // Set the mouse cursor free
-        g_UInputMan.TrapMousePos(false, m_pController->GetPlayer());
+        g_UInputMan.TrapMousePos(false);
         // Move the mouse cursor to the middle of the player's screen
         int mouseOffX, mouseOffY;
         m_pGUIInput->GetMouseOffset(mouseOffX, mouseOffY);
         Vector mousePos(-mouseOffX + (g_FrameMan.GetPlayerFrameBufferWidth(m_pController->GetPlayer()) / 2), -mouseOffY + (g_FrameMan.GetPlayerFrameBufferHeight(m_pController->GetPlayer()) / 2));
-        g_UInputMan.SetMousePos(mousePos, m_pController->GetPlayer());
+        g_UInputMan.SetMousePos(mousePos);
 
         // Default focus to the menu button
         m_MenuFocus = OK;
@@ -573,7 +573,7 @@ void BuyMenuGUI::SetEnabled(bool enable)
         EnableEquipmentSelection(false);
         m_MenuEnabled = DISABLING;
         // Trap the mouse cursor again
-        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
+        g_UInputMan.TrapMousePos(true);
         // Only play switching away sound
 //        if (!m_PurchaseMade)
             g_GUISound.ExitMenuSound()->Play(m_pController->GetPlayer());

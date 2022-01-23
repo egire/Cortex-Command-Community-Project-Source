@@ -110,7 +110,7 @@ namespace RTE {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool Controller::IsMouseControlled() const {
-		return g_UInputMan.IsInMultiplayerMode() ? DEVICE_MOUSE_KEYB : g_UInputMan.GetControlScheme(m_Player)->GetDevice() == DEVICE_MOUSE_KEYB;
+		return g_UInputMan.GetControlScheme(m_Player)->GetDevice() == DEVICE_MOUSE_KEYB;
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -340,19 +340,19 @@ namespace RTE {
 		if (IsMouseControlled()) {
 			m_MouseMovement = g_UInputMan.GetMouseMovement(m_Player);
 
-			if (g_UInputMan.MouseWheelMovedByPlayer(m_Player) < 0) {
+			if (g_UInputMan.MouseWheelMoved() < 0) {
 				m_ControlStates.at(WEAPON_CHANGE_NEXT) = m_ControlStates.at(SCROLL_DOWN) = true;
-			} else if (g_UInputMan.MouseWheelMovedByPlayer(m_Player) > 0) {
+			} else if (g_UInputMan.MouseWheelMoved() > 0) {
 				m_ControlStates.at(WEAPON_CHANGE_PREV) = m_ControlStates.at(SCROLL_UP) = true;
 			}
 			MouseButtons activeSecondary = MOUSE_RIGHT;
 
-			m_ControlStates.at(PRIMARY_ACTION) = g_UInputMan.MouseButtonHeld(MOUSE_LEFT, m_Player);
-			m_ControlStates.at(SECONDARY_ACTION) = g_UInputMan.MouseButtonHeld(activeSecondary, m_Player);
-			m_ControlStates.at(PRESS_PRIMARY) = g_UInputMan.MouseButtonPressed(MOUSE_LEFT, m_Player);
-			m_ControlStates.at(PRESS_SECONDARY) = g_UInputMan.MouseButtonPressed(activeSecondary, m_Player);
-			m_ControlStates.at(RELEASE_PRIMARY) = g_UInputMan.MouseButtonReleased(MOUSE_LEFT, m_Player);
-			m_ControlStates.at(RELEASE_SECONDARY) = g_UInputMan.MouseButtonReleased(activeSecondary, m_Player);
+			m_ControlStates.at(PRIMARY_ACTION) = g_UInputMan.MouseButtonHeld(MOUSE_LEFT);
+			m_ControlStates.at(SECONDARY_ACTION) = g_UInputMan.MouseButtonHeld(activeSecondary);
+			m_ControlStates.at(PRESS_PRIMARY) = g_UInputMan.MouseButtonPressed(MOUSE_LEFT);
+			m_ControlStates.at(PRESS_SECONDARY) = g_UInputMan.MouseButtonPressed(activeSecondary);
+			m_ControlStates.at(RELEASE_PRIMARY) = g_UInputMan.MouseButtonReleased(MOUSE_LEFT);
+			m_ControlStates.at(RELEASE_SECONDARY) = g_UInputMan.MouseButtonReleased(activeSecondary);
 		}
 	}
 }

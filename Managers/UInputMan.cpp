@@ -9,9 +9,9 @@
 #include "GUIInput.h"
 #include "Icon.h"
 #include "GameActivity.h"
-#include "NetworkServer.h"
 
 #ifdef _WIN32
+#include "Windows.h"
 #include "joystickapi.h"
 #endif
 
@@ -32,7 +32,6 @@ namespace RTE {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void UInputMan::Clear() {
-		m_OverrideInput = false;
 		m_RawMouseMovement.Reset();
 		m_AnalogMouseData.Reset();
 		m_MouseSensitivity = 0.6F;
@@ -74,25 +73,6 @@ namespace RTE {
 		for (int player = Players::PlayerOne; player < Players::MaxPlayerCount; ++player) {
 			m_ControlScheme.at(player).Reset();
 			m_ControlScheme.at(player).ResetToPlayerDefaults(static_cast<Players>(player));
-
-			for (int inputState = InputState::Held; inputState < InputState::InputStateCount; inputState++) {
-				for (int element = InputElements::INPUT_L_UP; element < InputElements::INPUT_COUNT; element++) {
-					m_NetworkInputElementState[player][element][inputState] = false;
-				}
-				for (int mouseButton = MouseButtons::MOUSE_LEFT; mouseButton < MouseButtons::MAX_MOUSE_BUTTONS; mouseButton++) {
-					m_NetworkMouseButtonState[player][mouseButton][inputState] = false;
-				}
-			}
-			m_NetworkAccumulatedRawMouseMovement[player].Reset();
-			m_NetworkAnalogMoveData[player].Reset();
-			m_NetworkMouseWheelState[player] = 0;
-			m_TrapMousePosPerPlayer[player] = false;
-		}
-
-		for (int inputState = InputState::Pressed; inputState < InputState::InputStateCount; inputState++) {
-			for (int element = InputElements::INPUT_L_UP; element < InputElements::INPUT_COUNT; element++) {
-				m_NetworkAccumulatedElementState[element][inputState] = false;
-			}
 		}
 	}
 
@@ -175,11 +155,9 @@ namespace RTE {
 	Vector UInputMan::AnalogAimValues(int whichPlayer) {
 		InputDevice device = m_ControlScheme.at(whichPlayer).GetDevice();
 
-		if (IsInMultiplayerMode()) { device = InputDevice::DEVICE_MOUSE_KEYB; }
-
 		Vector aimValues(0, 0);
 		if (device == InputDevice::DEVICE_MOUSE_KEYB) {
-			aimValues = (IsInMultiplayerMode() && whichPlayer >= Players::PlayerOne && whichPlayer < Players::MaxPlayerCount) ? (m_NetworkAnalogMoveData[whichPlayer] / m_MouseTrapRadius) : (m_AnalogMouseData / m_MouseTrapRadius);
+			aimValues = m_AnalogMouseData / m_MouseTrapRadius;
 		}
 		if (device >= InputDevice::DEVICE_GAMEPAD_1) {
 			int whichJoy = GetJoystickIndex(device);
@@ -311,7 +289,8 @@ namespace RTE {
 			m_DisableMouseMoving = true;
 			m_PrepareToEnableMouseMoving = false;
 			// Set these to outside the screen so the mouse has to be updated first before checking if they're in the screen or not
-			mouse_x = mouse_y = -1;
+			mouse_x = -1;
+			mouse_y = -1;
 		} else {
 			m_PrepareToEnableMouseMoving = true;
 		}
@@ -320,9 +299,6 @@ namespace RTE {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Vector UInputMan::GetMouseMovement(int whichPlayer) const {
-		if (IsInMultiplayerMode() && whichPlayer >= Players::PlayerOne && whichPlayer < Players::MaxPlayerCount) {
-			return m_NetworkAccumulatedRawMouseMovement[whichPlayer];
-		}
 		if (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB) {
 			return m_RawMouseMovement;
 		}
@@ -331,27 +307,22 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void UInputMan::SetMouseValueMagnitude(float magCap, int whichPlayer) {
-		if (IsInMultiplayerMode() && whichPlayer >= Players::PlayerOne && whichPlayer < Players::MaxPlayerCount) {
-			m_NetworkAnalogMoveData[whichPlayer].CapMagnitude(m_MouseTrapRadius * magCap);
-		}
+	void UInputMan::SetMouseValueMagnitude(float magCap) {
 		m_AnalogMouseData.CapMagnitude(m_MouseTrapRadius * magCap);
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void UInputMan::SetMousePos(Vector &newPos, int whichPlayer) const {
+	void UInputMan::SetMousePos(Vector &newPos) const {
 		// Only mess with the mouse if the original mouse position is not above the screen and may be grabbing the title bar of the game window
-		if (!m_DisableMouseMoving && !m_TrapMousePos && (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB)) {
-			position_mouse(static_cast<int>(newPos.GetX()), static_cast<int>(newPos.GetY()));
-		}
+		if (!m_DisableMouseMoving && !m_TrapMousePos) { position_mouse(static_cast<int>(newPos.GetX()), static_cast<int>(newPos.GetY())); }
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool UInputMan::AnyMouseButtonPress() const {
 		for (int button = MouseButtons::MOUSE_LEFT; button < MouseButtons::MAX_MOUSE_BUTTONS; ++button) {
-			if (MouseButtonPressed(button, -1)) {
+			if (MouseButtonPressed(button)) {
 				return true;
 			}
 		}
@@ -360,20 +331,9 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void UInputMan::TrapMousePos(bool trap, int whichPlayer) {
-		if (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB) {
-			m_TrapMousePos = trap;
-		}
-		m_TrapMousePosPerPlayer[whichPlayer] = trap;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void UInputMan::ForceMouseWithinBox(int x, int y, int width, int height, int whichPlayer) const {
+	void UInputMan::ForceMouseWithinBox(int x, int y, int width, int height) const {
 		// Only mess with the mouse if the original mouse position is not above the screen and may be grabbing the title bar of the game window
-		if (!m_DisableMouseMoving && !m_TrapMousePos && (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB)) {
-			position_mouse(Limit(mouse_x, x + width * g_FrameMan.GetResMultiplier(), x), Limit(mouse_y, y + height * g_FrameMan.GetResMultiplier(), y));
-		}
+		if (!m_DisableMouseMoving && !m_TrapMousePos) { position_mouse(Limit(mouse_x, x + width * g_FrameMan.GetResMultiplier(), x), Limit(mouse_y, y + height * g_FrameMan.GetResMultiplier(), y)); }
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -388,26 +348,26 @@ namespace RTE {
 		if (g_FrameMan.GetScreenCount() > 1) {
 			switch (whichPlayer) {
 				case Players::PlayerOne:
-					ForceMouseWithinBox(0, 0, screenWidth, screenHeight, whichPlayer);
+					ForceMouseWithinBox(0, 0, screenWidth, screenHeight);
 					break;
 				case Players::PlayerTwo:
 					if ((g_FrameMan.GetVSplit() && !g_FrameMan.GetHSplit()) || (g_FrameMan.GetVSplit() && g_FrameMan.GetHSplit())) {
-						ForceMouseWithinBox(g_FrameMan.GetResX() / 2, 0, screenWidth, screenHeight, whichPlayer);
+						ForceMouseWithinBox(g_FrameMan.GetResX() / 2, 0, screenWidth, screenHeight);
 					} else {
-						ForceMouseWithinBox(0, g_FrameMan.GetResY() / 2, screenWidth, screenHeight, whichPlayer);
+						ForceMouseWithinBox(0, g_FrameMan.GetResY() / 2, screenWidth, screenHeight);
 					}
 					break;
 				case Players::PlayerThree:
-					ForceMouseWithinBox(0, g_FrameMan.GetResY() / 2, screenWidth, screenHeight, whichPlayer);
+					ForceMouseWithinBox(0, g_FrameMan.GetResY() / 2, screenWidth, screenHeight);
 					break;
 				case Players::PlayerFour:
-					ForceMouseWithinBox(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2, screenWidth, screenHeight, whichPlayer);
+					ForceMouseWithinBox(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2, screenWidth, screenHeight);
 					break;
 				default:
 					RTEAbort("Undefined player value passed in. See Players enumeration for defined values.")
 			}
 		} else {
-			ForceMouseWithinBox(0, 0, screenWidth, screenHeight, whichPlayer);
+			ForceMouseWithinBox(0, 0, screenWidth, screenHeight);
 		}
 	}
 
@@ -499,28 +459,7 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Vector UInputMan::GetNetworkAccumulatedRawMouseMovement(int player) {
-		Vector accumulatedMovement = m_NetworkAccumulatedRawMouseMovement[player];
-		m_NetworkAccumulatedRawMouseMovement[player].Reset();
-		return accumulatedMovement;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void UInputMan::ClearNetworkAccumulatedStates() {
-		for (int inputState = InputState::Pressed; inputState < InputState::InputStateCount; inputState++) {
-			for (int element = InputElements::INPUT_L_UP; element < InputElements::INPUT_COUNT; element++) {
-				m_NetworkAccumulatedElementState[element][inputState] = false;
-			}
-		}
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	bool UInputMan::GetInputElementState(int whichPlayer, int whichElement, InputState whichState) {
-		if (IsInMultiplayerMode() && whichPlayer >= Players::PlayerOne && whichPlayer < Players::MaxPlayerCount) {
-			return m_TrapMousePosPerPlayer[whichPlayer] ? m_NetworkInputElementState[whichPlayer][whichElement][whichState] : false;
-		}
 		bool elementState = false;
 		InputDevice device = m_ControlScheme.at(whichPlayer).GetDevice();
 		const InputMapping *element = &(m_ControlScheme.at(whichPlayer).GetInputMappings()->at(whichElement));
@@ -528,7 +467,7 @@ namespace RTE {
 		if (!elementState && device == InputDevice::DEVICE_KEYB_ONLY || (device == InputDevice::DEVICE_MOUSE_KEYB && !(whichElement == InputElements::INPUT_AIM_UP || whichElement == InputElements::INPUT_AIM_DOWN))) {
 			elementState = GetKeyboardButtonState(static_cast<char>(element->GetKey()),whichState);
 		}
-		if (!elementState && device == InputDevice::DEVICE_MOUSE_KEYB && m_TrapMousePos) { elementState = GetMouseButtonState(whichPlayer, element->GetMouseButton(), whichState); }
+		if (!elementState && device == InputDevice::DEVICE_MOUSE_KEYB && m_TrapMousePos) { elementState = GetMouseButtonState(element->GetMouseButton(), whichState); }
 
 		if (!elementState && device >= InputDevice::DEVICE_GAMEPAD_1) {
 			int whichJoy = GetJoystickIndex(device);
@@ -545,10 +484,10 @@ namespace RTE {
 			bool buttonState = false;
 			InputDevice device = m_ControlScheme.at(player).GetDevice();
 			if (!buttonState && whichButton >= MenuCursorButtons::MENU_PRIMARY) {
-				buttonState = GetInputElementState(player, InputElements::INPUT_FIRE, whichState) || GetMouseButtonState(player, MouseButtons::MOUSE_LEFT, whichState);
+				buttonState = GetInputElementState(player, InputElements::INPUT_FIRE, whichState) || GetMouseButtonState(MouseButtons::MOUSE_LEFT, whichState);
 			}
 			if (!buttonState && whichButton >= MenuCursorButtons::MENU_SECONDARY) {
-				buttonState = GetInputElementState(player, InputElements::INPUT_PIEMENU, whichState) || GetMouseButtonState(player, MouseButtons::MOUSE_RIGHT, whichState);
+				buttonState = GetInputElementState(player, InputElements::INPUT_PIEMENU, whichState) || GetMouseButtonState(MouseButtons::MOUSE_RIGHT, whichState);
 			}
 			if (buttonState) {
 				m_LastDeviceWhichControlledGUICursor = device;
@@ -579,21 +518,9 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	bool UInputMan::GetMouseButtonState(int whichPlayer, int whichButton, InputState whichState) const {
+	bool UInputMan::GetMouseButtonState(int whichButton, InputState whichState) const {
 		if (whichButton < MouseButtons::MOUSE_LEFT || whichButton >= MouseButtons::MAX_MOUSE_BUTTONS) {
 			return false;
-		}
-		if (IsInMultiplayerMode()) {
-			if (whichPlayer < Players::PlayerOne || whichPlayer >= Players::MaxPlayerCount) {
-				for (int player = Players::PlayerOne; player < Players::MaxPlayerCount; player++) {
-					if (m_NetworkMouseButtonState[player][whichButton][whichState]) {
-						return m_NetworkMouseButtonState[player][whichButton][whichState];
-					}
-				}
-				return m_NetworkMouseButtonState[Players::PlayerOne][whichButton][whichState];
-			} else {
-				return m_NetworkMouseButtonState[whichPlayer][whichButton][whichState];
-			}
 		}
 		switch (whichState) {
 			case InputState::Held:
@@ -684,13 +611,6 @@ namespace RTE {
 		// TODO: Add sensitivity slider to settings menu
 		m_RawMouseMovement *= m_MouseSensitivity;
 
-		// NETWORK SERVER: Apply mouse input received from client or collect mouse input
-		if (IsInMultiplayerMode()) {
-			UpdateNetworkMouseMovement();
-		} else {
-			m_NetworkAccumulatedRawMouseMovement[Players::PlayerOne] += m_RawMouseMovement;
-		}
-
 		UpdateMouseInput();
 		if (num_joysticks > 0) { UpdateJoystickInput(); }
 		HandleSpecialInput();
@@ -710,8 +630,7 @@ namespace RTE {
 
 		if (g_ActivityMan.IsInActivity()) {
 			const GameActivity *gameActivity = dynamic_cast<GameActivity *>(g_ActivityMan.GetActivity());
-			// Don't allow pausing and returning to main menu when running in server mode to not disrupt the simulation for the clients
-			if (!g_NetworkServer.IsServerModeEnabled() && AnyStartPress(false) && (!gameActivity || !gameActivity->IsBuyGUIVisible(-1))) {
+			if (AnyStartPress(false) && (!gameActivity || !gameActivity->IsBuyGUIVisible(-1))) {
 				g_ActivityMan.PauseActivity();
 				return;
 			}
@@ -785,34 +704,6 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void UInputMan::UpdateNetworkMouseMovement() {
-		for (int player = Players::PlayerOne; player < Players::MaxPlayerCount; player++) {
-			if (!m_NetworkAccumulatedRawMouseMovement[player].IsZero()) {
-				// TODO: Figure out why we're multiplying by 3 here. Possibly related to mouse sensitivity.
-				m_NetworkAnalogMoveData[player].m_X += m_NetworkAccumulatedRawMouseMovement[player].m_X * 3;
-				m_NetworkAnalogMoveData[player].m_Y += m_NetworkAccumulatedRawMouseMovement[player].m_Y * 3;
-				m_NetworkAnalogMoveData[player].CapMagnitude(m_MouseTrapRadius);
-			}
-			m_NetworkAccumulatedRawMouseMovement[player].Reset();
-
-			// Clear mouse events and inputs as they should've been already processed during by recipients.
-			// This is important so mouse readings are correct, e.g. to ensure events don't trigger multiple times on a single press.
-			for (int inputState = InputState::Pressed; inputState < InputState::InputStateCount; inputState++) {
-				for (int element = InputElements::INPUT_L_UP; element < InputElements::INPUT_COUNT; element++) {
-					m_NetworkInputElementState[player][element][inputState] = false;
-				}
-				for (int mouseButton = MouseButtons::MOUSE_LEFT; mouseButton < MouseButtons::MAX_MOUSE_BUTTONS; mouseButton++) {
-					m_NetworkMouseButtonState[player][mouseButton][inputState] = false;
-				}
-			}
-
-			// Reset mouse wheel state to stop over-wheeling
-			m_NetworkMouseWheelState[player] = 0;
-		}
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	void UInputMan::UpdateMouseInput() {
 		// Detect and store mouse button inputs and their changes from last frame
 		s_CurrentMouseButtonStates[MouseButtons::MOUSE_LEFT] = mouse_b & 1;
@@ -831,7 +722,7 @@ namespace RTE {
 			m_AnalogMouseData.CapMagnitude(m_MouseTrapRadius);
 
 			// Only mess with the mouse pos if the original mouse position is not above the screen and may be grabbing the title bar of the game window
-			if (!m_DisableMouseMoving && !IsInMultiplayerMode()) {
+			if (!m_DisableMouseMoving) {
 				if (m_TrapMousePos) {
 					// Trap the (invisible) mouse cursor in the middle of the screen, so it doesn't fly out in windowed mode and some other window gets clicked
 					position_mouse(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2);
@@ -939,12 +830,6 @@ namespace RTE {
 		std::memcpy(s_PrevMouseButtonStates, s_CurrentMouseButtonStates, MouseButtons::MAX_MOUSE_BUTTONS);
 		for (int joystick = 0; joystick < num_joysticks; ++joystick) {
 			std::memcpy(s_PrevJoystickStates, &joy[joystick], sizeof(joy[joystick]));
-		}
-		// Store pressed and released events to be picked by NetworkClient during it's update. These will be cleared after update so we don't care about false but we store the result regardless.
-		for (int inputState = InputState::Pressed; inputState < InputState::InputStateCount; inputState++){
-			for (int element = InputElements::INPUT_L_UP; element < InputElements::INPUT_COUNT; element++) {
-				m_NetworkAccumulatedElementState[element][inputState] = GetInputElementState(Players::PlayerOne, element, static_cast<InputState>(inputState));
-			}
 		}
 	}
 }
