@@ -88,13 +88,6 @@ namespace RTE {
 	static constexpr unsigned int c_SoundMaxAudibleDistance = 10000; //!< The maximum distance at which any sound can possibly be heard, after which point it will have 0 volume. Arbitrary default suggested by FMOD.
 #pragma endregion
 
-#pragma region Network Constants
-	static constexpr unsigned short c_MaxClients = 4;
-	static constexpr unsigned short c_FramesToRemember = 3;
-	static constexpr unsigned short c_MaxLayersStoredForNetwork = 10;
-	static constexpr unsigned short c_MaxPixelLineBufferSize = 8192;
-#pragma endregion
-
 #pragma region Input Constants
 	/// <summary>
 	/// Enumeration for different types of input devices.
