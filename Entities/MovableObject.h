@@ -668,18 +668,6 @@ enum MOType
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Method:          GetScreenEffectHash
-//////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Gets the hash of the path of this object's screen effect file. Used to 
-//					transfer glow effects over network. The hash itself is calculated during
-//					load.
-// Arguments:       None.
-// Return value:    This effect's unique hash.
-
-	size_t GetScreenEffectHash() const { return m_ScreenEffectHash; }
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
 // Virtual method:  SetMass
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Sets the mass of this MovableObject.
@@ -1955,8 +1943,6 @@ protected:
     ContentFile m_ScreenEffectFile;
     // Not owned by this, owned by the contentfiles
     BITMAP *m_pScreenEffect;
-
-	size_t m_ScreenEffectHash;
 
     // Effect's showing is delayed by this amount into this' lifetime, in ms
     int m_EffectStartTime;

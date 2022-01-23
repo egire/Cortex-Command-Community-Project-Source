@@ -84,7 +84,6 @@ void MovableObject::Clear()
 	m_InheritEffectRotAngle = false;
 	m_RandomizeEffectRotAngle = false;
 	m_RandomizeEffectRotAngleEveryFrame = false;
-	m_ScreenEffectHash = 0;
     m_EffectStartTime = 0;
     m_EffectStopTime = 0;
     m_EffectStartStrength = 128;
@@ -235,7 +234,6 @@ int MovableObject::Create(const MovableObject &reference)
 	if (m_RandomizeEffectRotAngle)
 		m_EffectRotAngle = c_PI * RandomNum(-2.0F, 2.0F);
 
-	m_ScreenEffectHash = reference.m_ScreenEffectHash;
     m_EffectStartTime = reference.m_EffectStartTime;
     m_EffectStopTime = reference.m_EffectStopTime;
     m_EffectStartStrength = reference.m_EffectStartStrength;
@@ -340,7 +338,6 @@ int MovableObject::ReadProperty(const std::string_view &propName, Reader &reader
 	} else if (propName == "ScreenEffect") {
         reader >> m_ScreenEffectFile;
         m_pScreenEffect = m_ScreenEffectFile.GetAsBitmap();
-		m_ScreenEffectHash = m_ScreenEffectFile.GetHash();
     }
     else if (propName == "EffectStartTime")
         reader >> m_EffectStartTime;

@@ -12,11 +12,8 @@ namespace RTE {
 		m_PostScreenEffects.clear();
 		m_PostSceneEffects.clear();
 		m_YellowGlow = nullptr;
-		m_YellowGlowHash = 0;
 		m_RedGlow = nullptr;
-		m_RedGlowHash = 0;
 		m_BlueGlow = nullptr;
-		m_BlueGlowHash = 0;
 		m_TempEffectBitmaps.clear();
 	}
 
@@ -26,13 +23,10 @@ namespace RTE {
 		// TODO: Make more robust and load more glows!
 		ContentFile glowFile("Base.rte/Effects/Glows/YellowTiny.png");
 		m_YellowGlow = glowFile.GetAsBitmap();
-		m_YellowGlowHash = glowFile.GetHash();
 		glowFile.SetDataPath("Base.rte/Effects/Glows/RedTiny.png");
 		m_RedGlow = glowFile.GetAsBitmap();
-		m_RedGlowHash = glowFile.GetHash();
 		glowFile.SetDataPath("Base.rte/Effects/Glows/BlueTiny.png");
 		m_BlueGlow = glowFile.GetAsBitmap();
-		m_BlueGlowHash = glowFile.GetHash();
 
 		// Create temporary bitmaps to rotate post effects in.
 		m_TempEffectBitmaps = {
@@ -70,7 +64,7 @@ namespace RTE {
 		for (const PostEffect &postEffect : screenRelativeEffectsList) {
 			// Make sure we won't be adding any effects to a part of the screen that is occluded by menus and such
 			if (postEffect.m_Pos.GetFloorIntX() > screenOcclusionOffsetX && postEffect.m_Pos.GetFloorIntY() > screenOcclusionOffsetY && postEffect.m_Pos.GetFloorIntX() < occludedOffsetX && postEffect.m_Pos.GetFloorIntY() < occludedOffsetY) {
-				g_PostProcessMan.GetPostScreenEffectsList()->push_back(PostEffect(postEffect.m_Pos + targetBitmapOffset, postEffect.m_Bitmap, postEffect.m_BitmapHash, postEffect.m_Strength, postEffect.m_Angle));
+				g_PostProcessMan.GetPostScreenEffectsList()->push_back(PostEffect(postEffect.m_Pos + targetBitmapOffset, postEffect.m_Bitmap, postEffect.m_Strength, postEffect.m_Angle));
 			}
 		}
 		// Adjust glow areas for the player screen's position on the final buffer
@@ -83,10 +77,10 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void PostProcessMan::RegisterPostEffect(const Vector &effectPos, BITMAP *effect, size_t hash, int strength, float angle) {
+	void PostProcessMan::RegisterPostEffect(const Vector &effectPos, BITMAP *effect, int strength, float angle) {
 		// These effects get applied when there's a drawn frame that followed one or more sim updates.
 		// They are not only registered on drawn sim updates; flashes and stuff could be missed otherwise if they occur on undrawn sim updates.
-		if (effect && g_TimerMan.SimUpdatesSinceDrawn() >= 0) { m_PostSceneEffects.push_back(PostEffect(effectPos, effect, hash, strength, angle)); }
+		if (effect && g_TimerMan.SimUpdatesSinceDrawn() >= 0) { m_PostSceneEffects.push_back(PostEffect(effectPos, effect, strength, angle)); }
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +127,7 @@ namespace RTE {
 	void PostProcessMan::RegisterGlowDotEffect(const Vector &effectPos, DotGlowColor color, int strength) {
 		// These effects only apply only once per drawn sim update, and only on the first frame drawn after one or more sim updates
 		if (color != NoDot && g_TimerMan.DrawnSimUpdate() && g_TimerMan.SimUpdatesSinceDrawn() >= 0) {
-			RegisterPostEffect(effectPos, GetDotGlowEffect(color), GetDotGlowEffectHash(color), strength);
+			RegisterPostEffect(effectPos, GetDotGlowEffect(color), strength);
 		}
 	}
 
@@ -180,7 +174,7 @@ namespace RTE {
 			if (WithinBox(scenePostEffect.m_Pos, boxPos, static_cast<float>(boxWidth), static_cast<float>(boxHeight)) && !unseen) {
 				found = true;
 				postEffectPosRelativeToBox = scenePostEffect.m_Pos - boxPos;
-				effectsList.push_back(PostEffect(postEffectPosRelativeToBox, scenePostEffect.m_Bitmap, scenePostEffect.m_BitmapHash, scenePostEffect.m_Strength, scenePostEffect.m_Angle));
+				effectsList.push_back(PostEffect(postEffectPosRelativeToBox, scenePostEffect.m_Bitmap, scenePostEffect.m_Strength, scenePostEffect.m_Angle));
 			}
 		}
 		return found;
@@ -199,7 +193,7 @@ namespace RTE {
 			if (WithinBox(scenePostEffect.m_Pos, static_cast<float>(left), static_cast<float>(top), static_cast<float>(right), static_cast<float>(bottom)) && !unseen) {
 				found = true;
 				postEffectPosRelativeToBox = Vector(scenePostEffect.m_Pos.m_X - static_cast<float>(left), scenePostEffect.m_Pos.m_Y - static_cast<float>(top));
-				effectsList.push_back(PostEffect(postEffectPosRelativeToBox, scenePostEffect.m_Bitmap, scenePostEffect.m_BitmapHash, scenePostEffect.m_Strength, scenePostEffect.m_Angle));
+				effectsList.push_back(PostEffect(postEffectPosRelativeToBox, scenePostEffect.m_Bitmap, scenePostEffect.m_Strength, scenePostEffect.m_Angle));
 			}
 		}
 		return found;
@@ -220,24 +214,6 @@ namespace RTE {
 			default:
 				RTEAbort("Undefined glow dot color value passed in. See DotGlowColor enumeration for defined values.");
 				return nullptr;
-		}
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	size_t PostProcessMan::GetDotGlowEffectHash(DotGlowColor whichColor) const {
-		switch (whichColor) {
-			case NoDot:
-				return 0;
-			case YellowDot:
-				return m_YellowGlowHash;
-			case RedDot:
-				return m_RedGlowHash;
-			case BlueDot:
-				return m_BlueGlowHash;
-			default:
-				RTEAbort("Undefined glow dot color value passed in. See DotGlowColor enumeration for defined values.");
-				return 0;
 		}
 	}
 
