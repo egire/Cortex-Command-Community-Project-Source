@@ -11,7 +11,6 @@ if host_machine.system() in ['linux','osx']
     dependency('luajit'),
     dependency('minizip'),
     dependency('threads'),
-    dependency('liblz4'),
     dependency('libpng'),
     dependency('boost'), #needed for luabind
   ]
@@ -158,7 +157,6 @@ base_exclude_files = [
 	'LogConsole.txt',
 	'LogLoading.txt',
 	'LogLoadingWarning.txt',
-	'Start Dedicated Server.bat'
 ]
 
 if get_option('install_data')

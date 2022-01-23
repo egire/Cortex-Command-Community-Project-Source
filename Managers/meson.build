@@ -8,8 +8,6 @@ sources += files(
 'MenuMan.cpp',
 'MetaMan.cpp',
 'MovableMan.cpp',
-'NetworkClient.cpp',
-'NetworkServer.cpp',
 'PerformanceMan.cpp',
 'PostProcessMan.cpp',
 'PresetMan.cpp',

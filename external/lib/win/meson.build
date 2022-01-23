@@ -5,9 +5,7 @@ if host_machine.cpu_family() == 'x86'
   if get_option('debug')
   external_objects += files(
       'alleg-debug-static.lib',
-      'RakNet_Debug_Win32.lib',
       'fmodL_vc.lib',
-      'liblz4_debug_static.lib',
       'libpng16_static.lib',
       'loadpng-debug.lib',
       'lua51.lib',
@@ -17,9 +15,7 @@ if host_machine.cpu_family() == 'x86'
   else
     external_objects += files(
       'alleg.lib',
-      'RakNet_Release_Win32.lib',
       'fmodL_vc.lib',
-      'liblz4_release_static.lib',
       'libpng16_static.lib',
       'loadpng.lib',
       'lua51.lib',
@@ -33,9 +29,7 @@ message('using x86_64 libs')
   message('using debug libs')
   external_objects += files(
     'x64/alleg-debug-static.lib',
-    'x64/RakNet_Debug_x64.lib',
     'x64/fmod_vc.lib',
-    'x64/liblz4_debug_static.lib',
     'x64/libpng16_static.lib',
     'x64/loadpng-debug.lib',
     'x64/lua51-64.lib',
@@ -45,9 +39,7 @@ message('using x86_64 libs')
   else
     external_objects += files(
      'x64/alleg.lib',
-     'x64/RakNet_Release_x64.lib',
      'x64/fmod_vc.lib',
-     'x64/liblz4_release_static.lib',
      'x64/libpng16_static.lib',
      'x64/loadpng.lib',
      'x64/lua51-64.lib',
