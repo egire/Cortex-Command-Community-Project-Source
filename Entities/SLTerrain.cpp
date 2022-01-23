@@ -1038,7 +1038,6 @@ deque<MOPixel *> SLTerrain::EraseSilhouette(BITMAP *pSprite,
 				if (colorPixel != g_MaskColor)
 				{
 					putpixel(m_pFGColor->GetBitmap(), terrX, terrY, g_MaskColor);
-					g_SceneMan.RegisterTerrainChange(terrX, terrY, 1, 1, g_MaskColor, false);
 				}
             }
         }    
@@ -1132,10 +1131,6 @@ void SLTerrain::ApplyMovableObject(MovableObject *pMObject)
         // Finally draw temporary bitmap to the Scene
         masked_blit(pTempBitmap, GetFGColorBitmap(), 0, 0, bitmapScroll.m_X, bitmapScroll.m_Y, pTempBitmap->w, pTempBitmap->h);
 
-		// Register terrain change
-		g_SceneMan.RegisterTerrainChange(bitmapScroll.m_X, bitmapScroll.m_Y, pTempBitmap->w, pTempBitmap->h, g_MaskColor, false);
-
-
 // TODO: centralize seam drawing!
         // Draw over seams
         if (g_SceneMan.SceneWrapsX())
@@ -1183,31 +1178,9 @@ void SLTerrain::ApplyMovableObject(MovableObject *pMObject)
     else
     {
         pMObject->Draw(GetFGColorBitmap(), Vector(), g_DrawColor, true);
-		// Register terrain change
-		g_SceneMan.RegisterTerrainChange(pMObject->GetPos().m_X, pMObject->GetPos().m_Y, 1, 1, g_DrawColor, false);
-
         pMObject->Draw(GetMaterialBitmap(), Vector(), g_DrawMaterial, true);
     }
 }
-
-
-
-void SLTerrain::RegisterTerrainChange(TerrainObject *pTObject)
-{
-	if (!pTObject)
-		return;
-
-	Vector loc = pTObject->GetPos() + pTObject->GetBitmapOffset();
-
-	if (pTObject->HasBGColor())
-	{
-		g_SceneMan.RegisterTerrainChange(loc.m_X, loc.m_Y, pTObject->GetBitmapWidth(), pTObject->GetBitmapHeight(), g_MaskColor, true);
-	}
-
-	// Register terrain change
-	g_SceneMan.RegisterTerrainChange(loc.m_X, loc.m_Y, pTObject->GetBitmapWidth(), pTObject->GetBitmapHeight(), g_MaskColor, false);
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Virtual method:  ApplyTerrainObject
@@ -1244,11 +1217,7 @@ void SLTerrain::ApplyTerrainObject(TerrainObject *pTObject)
 	if (pTObject->HasBGColor())
 	{
 		draw_sprite(m_pBGColor->GetBitmap(), pTObject->GetBGColorBitmap(), loc.m_X, loc.m_Y);
-		g_SceneMan.RegisterTerrainChange(loc.m_X, loc.m_Y, pTObject->GetBitmapWidth(), pTObject->GetBitmapHeight(), g_MaskColor, true);
 	}
-
-	// Register terrain change
-	g_SceneMan.RegisterTerrainChange(loc.m_X, loc.m_Y, pTObject->GetBitmapWidth(), pTObject->GetBitmapHeight(), g_MaskColor, false);
 
     // Add a box to the updated areas list to show there's been change to the materials layer
     m_UpdatedMateralAreas.push_back(Box(loc, pTObject->GetMaterialBitmap()->w, pTObject->GetMaterialBitmap()->h));

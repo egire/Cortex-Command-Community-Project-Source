@@ -567,20 +567,6 @@ void SceneLayer::Update()
     ;
 }
 
-
-// TODO: Declare this in the header and remove the dupe declaration in NetworkClient.cpp
-// Data structure for constructing the draw boxes we'll need to use for drawing
-struct SLDrawBox
-{
-    int sourceX;
-    int sourceY;
-    int sourceW;
-    int sourceH;
-    int destX;
-    int destY;
-};
-
-
 //////////////////////////////////////////////////////////////////////////////////////////
 // Virtual method:  Draw
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -596,7 +582,6 @@ void SceneLayer::Draw(BITMAP *pTargetBitmap, Box& targetBox, const Vector &scrol
     int sourceH = 0;
     int destX = 0;
     int destY = 0;
-    list<SLDrawBox> drawList;
 
     int offsetX;
     int offsetY;
@@ -782,7 +767,6 @@ void SceneLayer::DrawScaled(BITMAP *pTargetBitmap, Box &targetBox, const Vector 
     int destY = 0;
     int destW = 0;
     int destH = 0;
-    list<SLDrawBox> drawList;
 
     int offsetX;
     int offsetY;
@@ -994,43 +978,4 @@ void SceneLayer::InitScrollRatios()
     // Establish the scaled dimensions of this
     m_ScaledDimensions.SetXY(m_pMainBitmap->w * m_ScaleFactor.m_X, m_pMainBitmap->h * m_ScaleFactor.m_Y);
 }
-
-
-void SceneLayer::UpdateScrollRatiosForNetworkPlayer(int player)
-{
-	if (m_WrapX)
-		m_ScrollRatio.m_X = m_ScrollInfo.m_X;
-	else
-	{
-		if (m_ScrollInfo.m_X == -1.0 || m_ScrollInfo.m_X == 1.0)
-			m_ScrollRatio.m_X = 1.0;
-		else if (m_ScrollInfo.m_X == g_FrameMan.GetPlayerFrameBufferWidth(player))
-			m_ScrollRatio.m_X = m_pMainBitmap->w - g_FrameMan.GetPlayerFrameBufferWidth(player);
-		else if (m_pMainBitmap->w == g_FrameMan.GetPlayerFrameBufferWidth(player))
-			m_ScrollRatio.m_X = 1.0f / (float)(m_ScrollInfo.m_X - g_FrameMan.GetPlayerFrameBufferWidth(player));
-		else
-			m_ScrollRatio.m_X = (float)(m_pMainBitmap->w - g_FrameMan.GetPlayerFrameBufferWidth(player)) /
-			(float)(m_ScrollInfo.m_X - g_FrameMan.GetPlayerFrameBufferWidth(player));
-	}
-
-	if (m_WrapY)
-		m_ScrollRatio.m_Y = m_ScrollInfo.m_Y;
-	else
-	{
-		if (m_ScrollInfo.m_Y == -1.0 || m_ScrollInfo.m_Y == 1.0)
-			m_ScrollRatio.m_Y = 1.0;
-		else if (m_ScrollInfo.m_Y == g_FrameMan.GetPlayerFrameBufferHeight(player))
-			m_ScrollRatio.m_Y = m_pMainBitmap->h - g_FrameMan.GetPlayerFrameBufferHeight(player);
-		else if (m_pMainBitmap->h == g_FrameMan.GetPlayerFrameBufferHeight(player))
-			m_ScrollRatio.m_Y = 1.0f / (float)(m_ScrollInfo.m_Y - g_FrameMan.GetPlayerFrameBufferHeight(player));
-		else
-			m_ScrollRatio.m_Y = (float)(m_pMainBitmap->h - g_FrameMan.GetPlayerFrameBufferHeight(player)) /
-			(float)(m_ScrollInfo.m_Y - g_FrameMan.GetPlayerFrameBufferHeight(player));
-	}
-
-	// Establish the scaled dimensions of this
-	m_ScaledDimensions.SetXY(m_pMainBitmap->w * m_ScaleFactor.m_X, m_pMainBitmap->h * m_ScaleFactor.m_Y);
-}
-
-
 } // namespace RTE

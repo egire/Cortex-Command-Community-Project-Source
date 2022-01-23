@@ -1029,7 +1029,6 @@ void SceneEditorGUI::Update()
 
 							g_SceneMan.GetTerrain()->ApplyTerrainObject(pTO);
 							g_SceneMan.GetTerrain()->CleanAir();
-							g_SceneMan.GetTerrain()->RegisterTerrainChange(pTO);
 
 // TODO: Make IsBrain function to see if one was placed
                             if (pTO->GetPresetName() == "Brain Vault")

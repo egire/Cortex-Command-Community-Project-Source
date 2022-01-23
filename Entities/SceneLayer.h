@@ -33,7 +33,6 @@ class ContentFile;
 // Class history:   12/31/2001 SceneLayer created.
 
 class SceneLayer : public Entity {
-	friend class NetworkServer;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Public member variable, method and friend function declarations
@@ -217,8 +216,6 @@ ClassInfoGetters;
 // Return value:    A pointer to the BITMAP object. Ownership is NOT transferred!
 
     BITMAP * GetBitmap() const { return m_pMainBitmap; }
-
-	size_t GetBitmapHash() const { return m_BitmapFile.GetHash(); }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -488,9 +485,6 @@ protected:
 // Return value:    None.
 
 	void InitScrollRatios();
-
-	void UpdateScrollRatiosForNetworkPlayer(int player);
-
 
     // Member variables
     static Entity::ClassInfo m_sClass;

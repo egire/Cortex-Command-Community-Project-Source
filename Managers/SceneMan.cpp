@@ -10,7 +10,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Inclusions of header files
-#include "NetworkServer.h"
 
 #include "SceneMan.h"
 #include "PresetMan.h"
@@ -169,13 +168,10 @@ int SceneMan::LoadScene(Scene *pNewScene, bool placeObjects, bool placeUnits) {
 		m_pCurrentScene = nullptr;
 	}
 
-	g_NetworkServer.LockScene(true);
-
     m_pCurrentScene = pNewScene;
     if (m_pCurrentScene->LoadData(placeObjects, true, placeUnits) < 0)
     {
         g_ConsoleMan.PrintString("ERROR: Loading scene \'" + m_pCurrentScene->GetPresetName() + "\' failed! Has it been properly defined?");
-		g_NetworkServer.LockScene(false);
 		return -1;
     }
 
@@ -230,9 +226,6 @@ int SceneMan::LoadScene(Scene *pNewScene, bool placeObjects, bool placeUnits) {
 
     // Finally draw the ID:s of the MO:s to the MOID layers for the first time
     g_MovableMan.UpdateDrawMOIDs(m_pMOIDLayer->GetBitmap());
-
-	g_NetworkServer.LockScene(false);
-	g_NetworkServer.ResetScene();
 
     return 0;
 }
@@ -435,10 +428,6 @@ Vector SceneMan::GetSceneDim() const
 
 int SceneMan::GetSceneWidth() const
 {
-	if (g_NetworkClient.IsConnectedAndRegistered()) {
-		return g_NetworkClient.GetSceneWidth();
-	}
-
 	if (m_pCurrentScene)
         return m_pCurrentScene->GetWidth();
     return 0;
@@ -466,10 +455,6 @@ int SceneMan::GetSceneHeight() const
 
 bool SceneMan::SceneWrapsX() const
 {
-	if (g_NetworkClient.IsConnectedAndRegistered()) {
-		return g_NetworkClient.SceneWrapsX();
-	}
-
 	if (m_pCurrentScene)
         return m_pCurrentScene->WrapsX();
     return false;
@@ -730,14 +715,6 @@ void SceneMan::SetScrollTarget(const Vector &targetCenter,
     // Don't override a set wrapping, it will be reset to false upon a drawn frame
     m_TargetWrapped[screen] = m_TargetWrapped[screen] || targetWrapped;
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-const Vector & SceneMan::GetScrollTarget(int screen) const {
-	 const Vector & offsetTarget = (g_NetworkClient.IsConnectedAndRegistered()) ? g_NetworkClient.GetFrameTarget() : m_ScrollTarget[screen];
-	 return offsetTarget;
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Method:          TargetDistanceScalar
@@ -1081,7 +1058,6 @@ int SceneMan::RemoveOrphans(int posX, int posY,
             pixelMO = 0;
         }
         m_pCurrentScene->GetTerrain()->SetFGColorPixel(posX, posY, g_MaskColor);
-		RegisterTerrainChange(posX, posY, 1, 1, g_MaskColor, false);
         m_pCurrentScene->GetTerrain()->SetMaterialPixel(posX, posY, g_MaterialAir);
 	}
 
@@ -1096,111 +1072,6 @@ int SceneMan::RemoveOrphans(int posX, int posY,
 	}
 
 	return area;
-}
-
-void SceneMan::RegisterTerrainChange(int x, int y, int w, int h, unsigned char color, bool back) 
-{
-	if (!g_NetworkServer.IsServerModeEnabled())
-		return;
-
-	// Crop if it's out of scene as both the client and server will not tolerate out of bitmap coords while packing/unpacking
-	if (y < 0)
-		y = 0;
-
-	if (y + h >= GetSceneHeight())
-		h = GetSceneHeight() - y - 1;
-
-	if (y >= GetSceneHeight() || h <= 0)
-		return;
-
-	if (w == 1)
-	{
-		if (x >= GetSceneWidth())
-		{
-			if (!SceneWrapsX())
-				return;
-			x = x - GetSceneWidth();
-		}
-		if (x < 0)
-		{
-			if (!SceneWrapsX())
-				return;
-			x = GetSceneWidth() + x;
-		}
-	}
-	else
-	{
-		// Divide region if crossing the seam
-		if (x + w >= GetSceneWidth() || x < 0)
-		{
-			// Crossing right part of the scene
-			if (x + w >= GetSceneWidth())
-			{
-				// Left part, on the scene
-				TerrainChange tc1;
-				tc1.x = x;
-				tc1.y = y;
-				tc1.w = GetSceneWidth() - x;
-				tc1.h = h;
-				tc1.back = back;
-				tc1.color = color;
-				g_NetworkServer.RegisterTerrainChange(tc1);
-
-				// Discard out of scene part if scene is not wrapped
-				if (!SceneWrapsX())
-					return;
-
-				// Right part, out of scene
-				TerrainChange tc2;
-				tc2.x = 0;
-				tc2.y = y;
-				tc2.w = w - (GetSceneWidth() - x);
-				tc2.h = h;
-				tc2.back = back;
-				tc2.color = color;
-
-				g_NetworkServer.RegisterTerrainChange(tc2);
-				return;
-			}
-
-			if (x < 0)
-			{
-				// Right part, on the scene
-				TerrainChange tc2;
-				tc2.x = 0;
-				tc2.y = y;
-				tc2.w = w + x;
-				tc2.h = h;
-				tc2.back = back;
-				tc2.color = color;
-				g_NetworkServer.RegisterTerrainChange(tc2);
-
-				// Discard out of scene part if scene is not wrapped
-				if (!SceneWrapsX())
-					return;
-
-				// Left part, out of the scene
-				TerrainChange tc1;
-				tc1.x = GetSceneWidth() + x;
-				tc1.y = y;
-				tc1.w = -x;
-				tc1.h = h;
-				tc1.back = back;
-				tc1.color = color;
-				g_NetworkServer.RegisterTerrainChange(tc1);
-				return;
-			}
-		}
-	}
-
-	TerrainChange tc;
-	tc.x = x;
-	tc.y = y;
-	tc.w = w;
-	tc.h = h;
-	tc.back = back;
-	tc.color = color;
-	g_NetworkServer.RegisterTerrainChange(tc);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1289,16 +1160,12 @@ bool SceneMan::TryPenetrate(const int posX,
                 pixelMO = 0;
             }
             m_pCurrentScene->GetTerrain()->SetFGColorPixel(posX, posY, g_MaskColor);
-			RegisterTerrainChange(posX, posY, 1, 1, g_MaskColor, false);
-
             m_pCurrentScene->GetTerrain()->SetMaterialPixel(posX, posY, g_MaterialAir);
         }
 // TODO: Improve / tweak randomized pushing away of terrain")
         else if (RandomNum() <= airRatio)
         {
             m_pCurrentScene->GetTerrain()->SetFGColorPixel(posX, posY, g_MaskColor);
-			RegisterTerrainChange(posX, posY, 1, 1, g_MaskColor, false);
-
 			m_pCurrentScene->GetTerrain()->SetMaterialPixel(posX, posY, g_MaterialAir);
         }
 
@@ -1362,7 +1229,6 @@ bool SceneMan::TryPenetrate(const int posX,
 						}
 
                         // Clear the terrain pixel now when the particle has been generated from it
-						RegisterTerrainChange(posX, testY, 1, 1, g_MaskColor, false);
                         _putpixel(pFGColor, posX, testY, g_MaskColor);
                         _putpixel(pMaterial, posX, testY, g_MaterialAir);
                     }

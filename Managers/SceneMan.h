@@ -676,7 +676,7 @@ public:
 // Arguments:       Which screen to get the target for.
 // Return value:    Current target vector in *scene coordinates*.
 
-	const Vector & GetScrollTarget(int screen = 0) const;
+	const Vector & GetScrollTarget(int screen = 0) const { return m_ScrollTarget[screen]; }
 
 
 
@@ -1634,29 +1634,6 @@ public:
 
     Material * AddMaterialCopy(Material *mat);
 
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Method:          RegisterTerrainChange
-//////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Registers terrain change event for the network server to be then sent to clients.
-// Arguments:       x,y - scene coordinates of change, w,h - size of the changed region, 
-//					color - changed color for one-pixel events, 
-//					back - if true, then background bitmap was changed if false then foreground.
-// Return value:    None.
-
-	void RegisterTerrainChange(int x, int y, int w, int h, unsigned char color, bool back);
-
-
-	//	Struct to register terrain change events
-	struct TerrainChange
-	{
-		int x;
-		int y;
-		int w;
-		int h;
-		unsigned char color;
-		bool back;
-	};
 
 	/// <summary>
 	/// Sets the current scene pointer to null
