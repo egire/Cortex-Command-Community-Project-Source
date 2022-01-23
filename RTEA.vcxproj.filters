@@ -390,12 +390,6 @@
     <ClInclude Include="Entities\PEmitter.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="Managers\NetworkClient.h">
-      <Filter>Managers</Filter>
-    </ClInclude>
-    <ClInclude Include="Managers\NetworkServer.h">
-      <Filter>Managers</Filter>
-    </ClInclude>
     <ClInclude Include="System\StandardIncludes.h">
       <Filter>System</Filter>
     </ClInclude>
@@ -446,9 +440,6 @@
     </ClInclude>
     <ClInclude Include="Entities\Round.h">
       <Filter>Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="System\NetworkMessages.h">
-      <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="System\InputScheme.h">
       <Filter>System</Filter>
@@ -884,12 +875,6 @@
     </ClCompile>
     <ClCompile Include="Entities\PEmitter.cpp">
       <Filter>Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="Managers\NetworkClient.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="Managers\NetworkServer.cpp">
-      <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="System\StandardIncludes.cpp">
       <Filter>System</Filter>

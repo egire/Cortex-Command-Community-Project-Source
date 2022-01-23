@@ -552,8 +552,6 @@
     <ClInclude Include="Lua\LuaAdaptersEntities.h" />
     <ClInclude Include="GUI\GUIWriter.h" />
     <ClInclude Include="Managers\MenuMan.h" />
-    <ClInclude Include="Managers\NetworkClient.h" />
-    <ClInclude Include="Managers\NetworkServer.h" />
     <ClInclude Include="Managers\PerformanceMan.h" />
     <ClInclude Include="Managers\PostProcessMan.h" />
     <ClInclude Include="Managers\PrimitiveMan.h" />
@@ -576,7 +574,6 @@
     <ClInclude Include="System\Entity.h" />
     <ClInclude Include="System\InputMapping.h" />
     <ClInclude Include="System\InputScheme.h" />
-    <ClInclude Include="System\NetworkMessages.h" />
     <ClInclude Include="System\GraphicalPrimitive.h" />
     <ClInclude Include="System\PieSlice.h" />
     <ClInclude Include="Menus\InventoryMenuGUI.h" />
@@ -824,8 +821,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Full|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Managers\MenuMan.cpp" />
-    <ClCompile Include="Managers\NetworkClient.cpp" />
-    <ClCompile Include="Managers\NetworkServer.cpp" />
     <ClCompile Include="Managers\PerformanceMan.cpp" />
     <ClCompile Include="Managers\PostProcessMan.cpp" />
     <ClCompile Include="Managers\PrimitiveMan.cpp" />
