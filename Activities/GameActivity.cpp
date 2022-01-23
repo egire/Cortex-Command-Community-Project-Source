@@ -78,7 +78,6 @@ void GameActivity::Clear()
         m_PurchaseOverride[player].clear();
         m_BrainLZWidth[player] = BRAINLZWIDTHDEFAULT;
 		m_TeamTech[player] = "";
-		m_NetworkPlayerNames[player] = "";
     }
 
 	m_StartingGold = 0;
@@ -175,8 +174,6 @@ int GameActivity::Create(const GameActivity &reference)
         m_pBannerYellow[player] = new GUIBanner();
         m_ReadyToStart[player] = reference.m_ReadyToStart[player];
         m_BrainLZWidth[player] = reference.m_BrainLZWidth[player];
-
-		m_NetworkPlayerNames[player] = reference.m_NetworkPlayerNames[player];
     }
 
     for (int team = Teams::TeamOne; team < Teams::MaxTeamCount; ++team)
@@ -928,48 +925,40 @@ int GameActivity::Start()
         ////////////////////////////////////
         // GUI split screen setup
         // If there are split screens, set up the GUIs to draw and their mouses to point correctly
-		if (g_FrameMan.IsInMultiplayerMode())
+		if (g_FrameMan.GetScreenCount() > 1)
 		{
-			m_pEditorGUI[player]->SetPosOnScreen(0, 0);
-			m_pBuyGUI[player]->SetPosOnScreen(0, 0);
-		}
-		else
-		{
-			if (g_FrameMan.GetScreenCount() > 1)
+			// Screen 1 Always upper left corner
+			if (ScreenOfPlayer(player) == 0)
 			{
-				// Screen 1 Always upper left corner
-				if (ScreenOfPlayer(player) == 0)
+				m_pEditorGUI[player]->SetPosOnScreen(0, 0);
+				m_pBuyGUI[player]->SetPosOnScreen(0, 0);
+			}
+			else if (ScreenOfPlayer(player) == 1)
+			{
+				// If both splits, or just Vsplit, then in upper right quadrant
+				if ((g_FrameMan.GetVSplit() && !g_FrameMan.GetHSplit()) || (g_FrameMan.GetVSplit() && g_FrameMan.GetVSplit()))
 				{
-					m_pEditorGUI[player]->SetPosOnScreen(0, 0);
-					m_pBuyGUI[player]->SetPosOnScreen(0, 0);
+					m_pEditorGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, 0);
+					m_pBuyGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, 0);
 				}
-				else if (ScreenOfPlayer(player) == 1)
-				{
-					// If both splits, or just Vsplit, then in upper right quadrant
-					if ((g_FrameMan.GetVSplit() && !g_FrameMan.GetHSplit()) || (g_FrameMan.GetVSplit() && g_FrameMan.GetVSplit()))
-					{
-						m_pEditorGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, 0);
-						m_pBuyGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, 0);
-					}
-					// If only hsplit, then lower left quadrant
-					else
-					{
-						m_pEditorGUI[player]->SetPosOnScreen(0, g_FrameMan.GetResY() / 2);
-						m_pBuyGUI[player]->SetPosOnScreen(0, g_FrameMan.GetResY() / 2);
-					}
-				}
-				// Screen 3 is lower left quadrant
-				else if (ScreenOfPlayer(player) == 2)
+				// If only hsplit, then lower left quadrant
+				else
 				{
 					m_pEditorGUI[player]->SetPosOnScreen(0, g_FrameMan.GetResY() / 2);
 					m_pBuyGUI[player]->SetPosOnScreen(0, g_FrameMan.GetResY() / 2);
 				}
-				// Screen 4 is lower right quadrant
-				else if (ScreenOfPlayer(player) == 3)
-				{
-					m_pEditorGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2);
-					m_pBuyGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2);
-				}
+			}
+			// Screen 3 is lower left quadrant
+			else if (ScreenOfPlayer(player) == 2)
+			{
+				m_pEditorGUI[player]->SetPosOnScreen(0, g_FrameMan.GetResY() / 2);
+				m_pBuyGUI[player]->SetPosOnScreen(0, g_FrameMan.GetResY() / 2);
+			}
+			// Screen 4 is lower right quadrant
+			else if (ScreenOfPlayer(player) == 3)
+			{
+				m_pEditorGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2);
+				m_pBuyGUI[player]->SetPosOnScreen(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2);
 			}
 		}
 
@@ -991,7 +980,7 @@ int GameActivity::Start()
         m_BannerRepeats[player] = 0;
 
         // Draw GO! game start notification
-        m_pBannerYellow[player]->ShowText("GO!", GUIBanner::FLYBYLEFTWARD, 1000, Vector(g_FrameMan.GetPlayerFrameBufferWidth(player), g_FrameMan.GetPlayerFrameBufferHeight(player)), 0.5, 1500, 500);
+        m_pBannerYellow[player]->ShowText("GO!", GUIBanner::FLYBYLEFTWARD, 1000, Vector(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight()), 0.5, 1500, 500);
 
         m_ActorCursor[player].Reset();
         m_LandingZone[player].Reset();
@@ -1509,7 +1498,7 @@ void GameActivity::Update()
                     // Show the pie menu switching animation over the highlighted Actor
                     m_pPieMenu[player]->SetPos(pMarkedActor->GetPos());
 
-                    if (markedDistance > g_FrameMan.GetPlayerFrameBufferWidth(player) / 4)
+                    if (markedDistance > g_FrameMan.GetPlayerScreenWidth() / 4)
                         m_pPieMenu[player]->Wobble();
                     else
                         m_pPieMenu[player]->FreezeAtRadius(30);
@@ -2002,10 +1991,7 @@ void GameActivity::Update()
         {
             g_FrameMan.ClearScreenText(ScreenOfPlayer(player));
             //g_FrameMan.SetScreenText("Press [Esc] to leave the battlefield", ScreenOfPlayer(player), 750);
-			if (g_FrameMan.IsInMultiplayerMode())
-				g_FrameMan.SetScreenText("All players must press and hold [BACKSPACE] to continue!", ScreenOfPlayer(player), 750);
-			else
-	            g_FrameMan.SetScreenText("Press [SPACE] or [START] to continue!", ScreenOfPlayer(player), 750);
+	        g_FrameMan.SetScreenText("Press [SPACE] or [START] to continue!", ScreenOfPlayer(player), 750);
 
             // Actually end on space
             if (m_GameOverTimer.IsPastSimMS(55000) || g_UInputMan.AnyStartPress())
@@ -2043,20 +2029,20 @@ void GameActivity::Update()
 
             // Player on a winning team
             if (GetWinnerTeam() == m_Team[player] && !m_pBannerYellow[player]->IsVisible())
-                m_pBannerYellow[player]->ShowText("WIN", GUIBanner::FLYBYRIGHTWARD, 1000, Vector(g_FrameMan.GetPlayerFrameBufferWidth(player), g_FrameMan.GetPlayerFrameBufferHeight(player)), 0.5, 1500, 400);
+                m_pBannerYellow[player]->ShowText("WIN", GUIBanner::FLYBYRIGHTWARD, 1000, Vector(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight()), 0.5, 1500, 400);
 
             // Loser player
             if (GetWinnerTeam() != m_Team[player] && !m_pBannerRed[player]->IsVisible())
-                m_pBannerRed[player]->ShowText("FAIL", GUIBanner::FLYBYLEFTWARD, 1000, Vector(g_FrameMan.GetPlayerFrameBufferWidth(player), g_FrameMan.GetPlayerFrameBufferHeight(player)), 0.5, 1500, 400);
+                m_pBannerRed[player]->ShowText("FAIL", GUIBanner::FLYBYLEFTWARD, 1000, Vector(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight()), 0.5, 1500, 400);
         }
         // If a player had a brain that is now dead, but his team is not yet done, show the dead banner on his screen
         else if (m_ActivityState != ActivityState::Editing && m_ActivityState != ActivityState::Starting && m_HadBrain[player] && !m_Brain[player] && !m_pBannerRed[player]->IsVisible())
         {
             // If repeated too many times, just let the banner stop at showing and not cycle
             if (m_BannerRepeats[player]++ < 6)
-                m_pBannerRed[player]->ShowText("DEAD", GUIBanner::FLYBYLEFTWARD, 1000, Vector(g_FrameMan.GetPlayerFrameBufferWidth(player), g_FrameMan.GetPlayerFrameBufferHeight(player)), 0.5, 1500, 400);
+                m_pBannerRed[player]->ShowText("DEAD", GUIBanner::FLYBYLEFTWARD, 1000, Vector(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight()), 0.5, 1500, 400);
             else
-                m_pBannerRed[player]->ShowText("DEAD", GUIBanner::FLYBYLEFTWARD, -1, Vector(g_FrameMan.GetPlayerFrameBufferWidth(player), g_FrameMan.GetPlayerFrameBufferHeight(player)), 0.5, 1500, 400);
+                m_pBannerRed[player]->ShowText("DEAD", GUIBanner::FLYBYLEFTWARD, -1, Vector(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight()), 0.5, 1500, 400);
         }
 
         ///////////////////////////////////////
@@ -2947,21 +2933,4 @@ void GameActivity::ObjectivePoint::Draw(BITMAP *pTargetBitmap, BITMAP *pArrowBit
         g_FrameMan.GetLargeFont()->DrawAligned(&allegroBitmap, x, y + pArrowBitmap->h + textSpace, m_Description, GUIFont::Centre, GUIFont::Top);
     }
 }
-
-std::string & GameActivity::GetNetworkPlayerName(int player)
-{
-	if (player >= Players::PlayerOne && player < Players::MaxPlayerCount)
-		return m_NetworkPlayerNames[player];
-	else
-		return m_NetworkPlayerNames[0];
-}
-
-void GameActivity::SetNetworkPlayerName(int player, std::string name)
-{
-	if (player >= Players::PlayerOne && player < Players::MaxPlayerCount)
-		m_NetworkPlayerNames[player] = name;
-}
-
-
-
 } // namespace RTE

@@ -114,7 +114,7 @@ namespace RTE {
 
 		FetchActivitiesAndScenesLists();
 
-		// Only show the resume button if the current Activity is a GameActivity. Editor or Multiplayer Activities are resumed from the main menu, so the resume button shouldn't show for them.
+		// Only show the resume button if the current Activity is a GameActivity. Editor Activities are resumed from the main menu, so the resume button shouldn't show for them.
 		const GameActivity *currentActivity = dynamic_cast<GameActivity *>(g_ActivityMan.GetActivity());
 		m_ResumeButton->SetVisible(currentActivity && (currentActivity->GetActivityState() == Activity::Running || currentActivity->GetActivityState() == Activity::Editing));
 

@@ -342,8 +342,8 @@ namespace RTE {
 		if (whichPlayer < Players::PlayerOne || whichPlayer >= Players::PlayerFour) {
 			return;
 		}
-		unsigned int screenWidth = g_FrameMan.GetPlayerFrameBufferWidth(whichPlayer);
-		unsigned int screenHeight = g_FrameMan.GetPlayerFrameBufferHeight(whichPlayer);
+		unsigned int screenWidth = g_FrameMan.GetPlayerScreenWidth();
+		unsigned int screenHeight = g_FrameMan.GetPlayerScreenHeight();
 
 		if (g_FrameMan.GetScreenCount() > 1) {
 			switch (whichPlayer) {

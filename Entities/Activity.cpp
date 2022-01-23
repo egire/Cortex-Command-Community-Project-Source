@@ -265,11 +265,9 @@ void Activity::Clear() {
 		m_Paused = false;
 
 		// Reset the mouse moving so that it won't trap the mouse if the window isn't in focus (common after loading)
-		if (!g_FrameMan.IsInMultiplayerMode()) {
-			g_UInputMan.DisableMouseMoving(true);
-			g_UInputMan.DisableMouseMoving(false);
-			g_UInputMan.DisableKeys(false);
-		}
+		g_UInputMan.DisableMouseMoving(true);
+		g_UInputMan.DisableMouseMoving(false);
+		g_UInputMan.DisableKeys(false);
 
 		int error = g_SceneMan.LoadScene();
 		if (error < 0) {

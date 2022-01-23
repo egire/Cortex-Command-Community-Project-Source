@@ -321,7 +321,7 @@ namespace RTE {
 		CalculateDrawPosition(targetBitmap, targetPos, drawPos);
 
 		if (m_EnabledState != EnabledState::Disabled) {
-			if (m_DrawBackgroundTransparent && !g_FrameMan.IsInMultiplayerMode()) {
+			if (m_DrawBackgroundTransparent) {
 				g_FrameMan.SetTransTable(MoreTrans);
 				draw_trans_sprite(targetBitmap, m_BGBitmap, drawPos.GetFloorIntX() - m_BGBitmap->w / 2, drawPos.GetFloorIntY() - m_BGBitmap->h / 2);
 			} else {

@@ -205,14 +205,10 @@ namespace RTE {
 			s_CursorBitmap = cursorFile.GetAsBitmap();
 		}
 
-		if (g_FrameMan.IsInMultiplayerMode()) {
-			dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("base"))->SetSize(g_FrameMan.GetPlayerFrameBufferWidth(m_MenuController->GetPlayer()), g_FrameMan.GetPlayerFrameBufferHeight(m_MenuController->GetPlayer()));
-		} else {
-			dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("base"))->SetSize(g_FrameMan.GetResX(), g_FrameMan.GetResY());
-		}
+		dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("base"))->SetSize(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight());
 
 		m_GUITopLevelBox = dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("CollectionBox_InventoryMenuGUI"));
-		m_GUITopLevelBox->SetPositionAbs(g_FrameMan.GetPlayerFrameBufferWidth(m_MenuController->GetPlayer()), 0);
+		m_GUITopLevelBox->SetPositionAbs(g_FrameMan.GetPlayerScreenWidth(), 0);
 		m_GUITopLevelBoxFullSize.SetXY(static_cast<float>(m_GUITopLevelBox->GetWidth()), static_cast<float>(m_GUITopLevelBox->GetHeight()));
 		m_GUIInformationText = dynamic_cast<GUILabel *>(m_GUIControlManager->GetControl("Label_InformationText"));
 		m_GUIInformationToggleButton = dynamic_cast<GUIButton *>(m_GUIControlManager->GetControl("Button_InformationToggle"));
@@ -1325,7 +1321,7 @@ namespace RTE {
 		std::list<IntRect> wrappedRectangles;
 		g_SceneMan.WrapRect(IntRect(drawPos.GetFloorIntX(), drawPos.GetFloorIntY(), drawPos.GetFloorIntX() + m_CarouselBitmap->w, drawPos.GetFloorIntY() + m_CarouselBitmap->h), wrappedRectangles);
 		for (const IntRect &wrappedRectangle : wrappedRectangles) {
-			if (m_CarouselBackgroundTransparent && !g_FrameMan.IsInMultiplayerMode()) {
+			if (m_CarouselBackgroundTransparent) {
 				g_FrameMan.SetTransTable(MoreTrans);
 				draw_trans_sprite(targetBitmap, m_CarouselBGBitmap.get(), wrappedRectangle.m_Left - m_CarouselBGBitmap->w / 2, wrappedRectangle.m_Top - m_CarouselBGBitmap->h / 2);
 				draw_sprite(targetBitmap, m_CarouselBitmap.get(), wrappedRectangle.m_Left - m_CarouselBitmap->w / 2, wrappedRectangle.m_Top - m_CarouselBitmap->h / 2);

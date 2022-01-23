@@ -812,7 +812,7 @@ void HDFirearm::Update()
             MOPixel *pPixel;
             float shake, particleSpread, shellSpread, lethalRange;
 
-            lethalRange = m_MaxSharpLength * m_SharpAim + max(g_FrameMan.GetPlayerFrameBufferWidth(-1), g_FrameMan.GetPlayerFrameBufferHeight(-1)) * 0.51F;
+            lethalRange = m_MaxSharpLength * m_SharpAim + max(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight()) * 0.51F;
             Actor *pUser = dynamic_cast<Actor *>(pRootParent);
             if (pUser)
                 lethalRange += pUser->GetAimDistance();

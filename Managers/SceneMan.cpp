@@ -670,16 +670,8 @@ void SceneMan::SetScroll(const Vector &center, int screen)
     if (screen >= c_MaxScreenCount)
         return;
 
-	if (g_FrameMan.IsInMultiplayerMode())
-	{
-		m_Offset[screen].m_X = center.GetFloorIntX() - (g_FrameMan.GetPlayerFrameBufferWidth(screen) / 2);
-		m_Offset[screen].m_Y = center.GetFloorIntY() - (g_FrameMan.GetPlayerFrameBufferHeight(screen) / 2);
-	}
-	else 
-	{
-		m_Offset[screen].m_X = center.GetFloorIntX() - (g_FrameMan.GetResX() / 2);
-		m_Offset[screen].m_Y = center.GetFloorIntY() - (g_FrameMan.GetResY() / 2);
-	}
+	m_Offset[screen].m_X = center.GetFloorIntX() - (g_FrameMan.GetPlayerScreenWidth() / 2);
+	m_Offset[screen].m_Y = center.GetFloorIntY() - (g_FrameMan.GetPlayerScreenHeight() / 2);
 
     CheckOffset(screen);
 
@@ -783,16 +775,8 @@ void SceneMan::CheckOffset(int screen)
     if (!pTerrain->WrapsY() && m_Offset[screen].m_Y < 0)
         m_Offset[screen].m_Y = 0;
 
-    int frameWidth = g_FrameMan.GetResX();
-    int frameHeight = g_FrameMan.GetResY();
-    frameWidth = frameWidth / (g_FrameMan.GetVSplit() ? 2 : 1);
-    frameHeight = frameHeight / (g_FrameMan.GetHSplit() ? 2 : 1);
-
-	if (g_FrameMan.IsInMultiplayerMode())
-	{
-		frameWidth = g_FrameMan.GetPlayerFrameBufferWidth(screen);
-		frameHeight = g_FrameMan.GetPlayerFrameBufferHeight(screen);
-	}
+    int frameWidth = g_FrameMan.GetPlayerScreenWidth();
+    int frameHeight = g_FrameMan.GetPlayerScreenHeight();
 
     if (!pTerrain->WrapsX() && m_Offset[screen].m_X >= pTerrain->GetBitmap()->w - frameWidth)
         m_Offset[screen].m_X = pTerrain->GetBitmap()->w - frameWidth;
@@ -3272,16 +3256,8 @@ void SceneMan::Update(int screen)
 
     // Get the offset target, since the scroll target is centered on the target in scene units.
     Vector offsetTarget;
-	if (g_FrameMan.IsInMultiplayerMode())
-	{
-		offsetTarget.m_X = m_ScrollTarget[screen].m_X - (g_FrameMan.GetPlayerFrameBufferWidth(screen) / 2);
-		offsetTarget.m_Y = m_ScrollTarget[screen].m_Y - (g_FrameMan.GetPlayerFrameBufferHeight(screen) / 2);
-	}
-	else 
-	{
-		offsetTarget.m_X = m_ScrollTarget[screen].m_X - (g_FrameMan.GetResX() / (g_FrameMan.GetVSplit() ? 4 : 2));
-		offsetTarget.m_Y = m_ScrollTarget[screen].m_Y - (g_FrameMan.GetResY() / (g_FrameMan.GetHSplit() ? 4 : 2));
-	}
+	offsetTarget.m_X = m_ScrollTarget[screen].m_X - (g_FrameMan.GetPlayerScreenWidth() / 2);
+	offsetTarget.m_Y = m_ScrollTarget[screen].m_Y - (g_FrameMan.GetPlayerScreenHeight() / 2);
 
     // Take the occlusion of the screens into account,
     // so that the scrolltarget is still centered on the terrain-visible portion of the screen.
@@ -3405,7 +3381,7 @@ void SceneMan::Draw(BITMAP *pTargetBitmap, BITMAP *pTargetGUIBitmap, const Vecto
 				pTerrain->Draw(pTargetBitmap, targetBox);
 
             // Obscure unexplored/unseen areas
-            if (pUnseenLayer && !g_FrameMan.IsInMultiplayerMode())
+            if (pUnseenLayer)
             {
                 // Draw the unseen obstruction layer so it obscures the team's view
                 pUnseenLayer->DrawScaled(pTargetBitmap, targetBox);

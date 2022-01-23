@@ -1727,25 +1727,6 @@ void Actor::DrawHUD(BITMAP *pTargetBitmap, const Vector &targetPos, int whichScr
             // If we're still alive, show the team colors
             if (m_Health > 0)
             {
-				if (IsPlayerControlled() && g_FrameMan.IsInMultiplayerMode())
-				{
-					m_pControllerIcon = 0;
-					if (m_Team == 0)
-						m_pControllerIcon = g_UInputMan.GetDeviceIcon(DEVICE_GAMEPAD_1);
-					else if (m_Team == 1)
-						m_pControllerIcon = g_UInputMan.GetDeviceIcon(DEVICE_GAMEPAD_2);
-					else if (m_Team == 2)
-						m_pControllerIcon = g_UInputMan.GetDeviceIcon(DEVICE_GAMEPAD_3);
-					else if (m_Team == 3)
-						m_pControllerIcon = g_UInputMan.GetDeviceIcon(DEVICE_GAMEPAD_4);
-					if (m_pControllerIcon)
-					{
-						std::vector<BITMAP *> apControllerBitmaps = m_pControllerIcon->GetBitmaps8();
-
-						masked_blit(apControllerBitmaps.at(0), pTargetBitmap, 0, 0, drawPos.m_X - apControllerBitmaps.at(0)->w - 2 + 10, drawPos.m_Y + m_HUDStack - (apControllerBitmaps.at(0)->h / 2) + 8, apControllerBitmaps.at(0)->w, apControllerBitmaps.at(0)->h);
-					}
-				}
-
                 // Get the Icon bitmaps of this Actor's team, if any
                 std::vector<BITMAP *> apIconBitmaps;
                 if (m_pTeamIcon)
@@ -1804,16 +1785,6 @@ void Actor::DrawHUD(BITMAP *pTargetBitmap, const Vector &targetPos, int whichScr
                 m_HUDStack += -11;
             }
 
-			// Player name
-			if (IsPlayerControlled() && g_FrameMan.IsInMultiplayerMode())
-			{
-				GameActivity * pGameActivity = dynamic_cast<GameActivity *>(g_ActivityMan.GetActivity());
-				if (pGameActivity)
-				{
-					pSmallFont->DrawAligned(&bitmapInt, drawPos.m_X - 0, drawPos.m_Y + m_HUDStack + 2, pGameActivity->GetNetworkPlayerName(m_Controller.GetPlayer()).c_str(), GUIFont::Centre);
-					m_HUDStack += -11;
-				}
-			}
 /* Obsolete
             // Draw the contol pointer, if controlled and under the icon's time limit
             if (m_Controller.IsPlayetControlled() && m_NewControlTmr.GetElapsedSimTimeMS() < 1500)

@@ -76,14 +76,10 @@ namespace RTE {
 			s_Cursor = cursorFile.GetAsBitmap();
 		}
 
-		if (g_FrameMan.IsInMultiplayerMode()) {
-			dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("base"))->SetSize(g_FrameMan.GetPlayerFrameBufferWidth(controller->GetPlayer()), g_FrameMan.GetPlayerFrameBufferHeight(controller->GetPlayer()));
-		} else {
-			dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("base"))->SetSize(g_FrameMan.GetResX(), g_FrameMan.GetResY());
-		}
+		dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("base"))->SetSize(g_FrameMan.GetPlayerScreenWidth(), g_FrameMan.GetPlayerScreenHeight());
 
 		if (!m_ParentBox) { m_ParentBox = dynamic_cast<GUICollectionBox *>(m_GUIControlManager->GetControl("PickerGUIBox")); }
-		m_ParentBox->SetPositionAbs(g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer()), 0);
+		m_ParentBox->SetPositionAbs(g_FrameMan.GetPlayerScreenWidth(), 0);
 		m_ParentBox->SetEnabled(false);
 		m_ParentBox->SetVisible(false);
 		m_GroupsList = dynamic_cast<GUIListBox *>(m_GUIControlManager->GetControl("GroupsLB"));
@@ -97,7 +93,7 @@ namespace RTE {
 		m_ObjectsList->SetAlternateDrawMode(true);
 		m_ObjectsList->SetMultiSelect(false);
 
-		int stretchAmount = g_FrameMan.IsInMultiplayerMode() ? (g_FrameMan.GetPlayerFrameBufferHeight(m_Controller->GetPlayer()) - m_ParentBox->GetHeight()) : (g_FrameMan.GetPlayerScreenHeight() - m_ParentBox->GetHeight());
+		int stretchAmount = g_FrameMan.GetPlayerScreenHeight() - m_ParentBox->GetHeight();
 		if (stretchAmount != 0) {
 			m_ParentBox->SetSize(m_ParentBox->GetWidth(), m_ParentBox->GetHeight() + stretchAmount);
 			m_GroupsList->SetSize(m_GroupsList->GetWidth(), m_GroupsList->GetHeight() + stretchAmount);
@@ -126,7 +122,7 @@ namespace RTE {
 		if (enable && m_PickerState != PickerState::Enabled && m_PickerState != PickerState::Enabling) {
 			m_PickerState = PickerState::Enabling;
 			g_UInputMan.TrapMousePos(false);
-			m_CursorPos.SetXY(static_cast<float>(g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer()) / 2), static_cast<float>(g_FrameMan.GetPlayerFrameBufferHeight(m_Controller->GetPlayer()) / 2));
+			m_CursorPos.SetXY(static_cast<float>(g_FrameMan.GetPlayerScreenWidth() / 2), static_cast<float>(g_FrameMan.GetPlayerScreenHeight() / 2));
 			g_UInputMan.SetMousePos(m_CursorPos);
 
 			SetListFocus(m_ObjectsList->GetItemList()->empty() ? PickerFocus::GroupList : PickerFocus::ObjectList);
@@ -545,11 +541,11 @@ namespace RTE {
 		if (m_PickerState == PickerState::Enabling) {
 			m_ParentBox->SetVisible(true);
 
-			int enabledPos = g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer()) - m_ParentBox->GetWidth();
+			int enabledPos = g_FrameMan.GetPlayerScreenWidth() - m_ParentBox->GetWidth();
 			float travelCompletionDistance = std::floor(static_cast<float>(enabledPos - m_ParentBox->GetXPos()) * m_OpenCloseSpeed);
 
 			m_ParentBox->SetPositionAbs(m_ParentBox->GetXPos() + static_cast<int>(travelCompletionDistance), 0);
-			g_SceneMan.SetScreenOcclusion(Vector(static_cast<float>(m_ParentBox->GetXPos() - g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer())), 0), g_ActivityMan.GetActivity()->ScreenOfPlayer(m_Controller->GetPlayer()));
+			g_SceneMan.SetScreenOcclusion(Vector(static_cast<float>(m_ParentBox->GetXPos() - g_FrameMan.GetPlayerScreenWidth()), 0), g_ActivityMan.GetActivity()->ScreenOfPlayer(m_Controller->GetPlayer()));
 
 			if (m_ParentBox->GetXPos() <= enabledPos) {
 				m_ParentBox->SetEnabled(true);
@@ -559,13 +555,13 @@ namespace RTE {
 			m_ParentBox->SetEnabled(false);
 			m_PopupBox->SetVisible(false);
 
-			int disabledPos = g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer());
+			int disabledPos = g_FrameMan.GetPlayerScreenWidth();
 			float travelCompletionDistance = std::ceil(static_cast<float>(disabledPos - m_ParentBox->GetXPos()) * m_OpenCloseSpeed);
 
 			m_ParentBox->SetPositionAbs(m_ParentBox->GetXPos() + static_cast<int>(travelCompletionDistance), 0);
-			g_SceneMan.SetScreenOcclusion(Vector(static_cast<float>(m_ParentBox->GetXPos() - g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer())), 0), g_ActivityMan.GetActivity()->ScreenOfPlayer(m_Controller->GetPlayer()));
+			g_SceneMan.SetScreenOcclusion(Vector(static_cast<float>(m_ParentBox->GetXPos() - g_FrameMan.GetPlayerScreenWidth()), 0), g_ActivityMan.GetActivity()->ScreenOfPlayer(m_Controller->GetPlayer()));
 
-			if (m_ParentBox->GetXPos() >= g_FrameMan.GetPlayerFrameBufferWidth(m_Controller->GetPlayer())) {
+			if (m_ParentBox->GetXPos() >= g_FrameMan.GetPlayerScreenWidth()) {
 				m_ParentBox->SetVisible(false);
 				m_PickerState = PickerState::Disabled;
 			}

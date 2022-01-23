@@ -74,10 +74,6 @@ namespace RTE {
 		m_BackBuffer8 = nullptr;
 		m_BackBuffer32 = nullptr;
 		m_OverlayBitmap32 = nullptr;
-		m_DrawNetworkBackBuffer = false;
-		m_StoreNetworkBackBuffer = false;
-		m_NetworkFrameCurrent = 0;
-		m_NetworkFrameReady = 1;
 		m_PaletteFile = ContentFile("Base.rte/palette.bmp");
 		m_BlackColor = 245;
 		m_AlmostBlackColor = 245;
@@ -100,18 +96,6 @@ namespace RTE {
 			m_FlashScreenColor[screenCount] = -1;
 			m_FlashedLastFrame[screenCount] = false;
 			m_FlashTimer[screenCount].Reset();
-
-			for (int bufferFrame = 0; bufferFrame < 2; bufferFrame++) {
-				m_NetworkBackBufferIntermediate8[bufferFrame][screenCount] = nullptr;
-				m_NetworkBackBufferFinal8[bufferFrame][screenCount] = nullptr;
-				m_NetworkBackBufferIntermediateGUI8[bufferFrame][screenCount] = nullptr;
-				m_NetworkBackBufferFinalGUI8[bufferFrame][screenCount] = nullptr;
-
-				m_TempNetworkBackBufferIntermediate8[bufferFrame][screenCount] = nullptr;
-				m_TempNetworkBackBufferIntermediateGUI8[bufferFrame][screenCount] = nullptr;
-				m_TempNetworkBackBufferFinal8[bufferFrame][screenCount] = nullptr;
-				m_TempNetworkBackBufferFinalGUI8[bufferFrame][screenCount] = nullptr;
-			}
 		}
 	}
 
@@ -320,23 +304,6 @@ namespace RTE {
 		m_OverlayBitmap32 = create_bitmap_ex(32, m_ResX, m_ResY);
 		clear_to_color(m_OverlayBitmap32, 0);
 
-		// Create all the network 8bpp back buffers
-		for (int i = 0; i < c_MaxScreenCount; i++) {
-			for (int f = 0; f < 2; f++) {
-				m_NetworkBackBufferIntermediate8[f][i] = create_bitmap_ex(8, m_ResX, m_ResY);
-				clear_to_color(m_NetworkBackBufferIntermediate8[f][i], m_BlackColor);
-
-				m_NetworkBackBufferIntermediateGUI8[f][i] = create_bitmap_ex(8, m_ResX, m_ResY);
-				clear_to_color(m_NetworkBackBufferIntermediateGUI8[f][i], g_MaskColor);
-
-				m_NetworkBackBufferFinal8[f][i] = create_bitmap_ex(8, m_ResX, m_ResY);
-				clear_to_color(m_NetworkBackBufferFinal8[f][i], m_BlackColor);
-
-				m_NetworkBackBufferFinalGUI8[f][i] = create_bitmap_ex(8, m_ResX, m_ResY);
-				clear_to_color(m_NetworkBackBufferFinalGUI8[f][i], g_MaskColor);
-			}
-		}
-
 		m_PlayerScreenWidth = m_BackBuffer8->w;
 		m_PlayerScreenHeight = m_BackBuffer8->h;
 
@@ -363,14 +330,6 @@ namespace RTE {
 		m_TempBackBuffer32 = m_BackBuffer32;
 		m_TempOverlayBitmap32 = m_OverlayBitmap32;
 
-		for (int i = 0; i < c_MaxScreenCount; i++) {
-			for (int f = 0; f < 2; f++) {
-				m_TempNetworkBackBufferIntermediate8[f][i] = m_NetworkBackBufferIntermediate8[f][i];
-				m_TempNetworkBackBufferIntermediateGUI8[f][i] = m_NetworkBackBufferIntermediateGUI8[f][i];
-				m_TempNetworkBackBufferFinal8[f][i] = m_NetworkBackBufferFinal8[f][i];
-				m_TempNetworkBackBufferFinalGUI8[f][i] = m_NetworkBackBufferFinalGUI8[f][i];
-			}
-		}
 		if (m_HSplit || m_VSplit) { m_TempPlayerScreen = m_PlayerScreen; }
 
 		CreateBackBuffers();
@@ -387,15 +346,6 @@ namespace RTE {
 		destroy_bitmap(m_WorldDumpBuffer);
 		destroy_bitmap(m_ScenePreviewDumpGradient);
 
-		for (int i = 0; i < c_MaxScreenCount; i++) {
-			for (int f = 0; f < 2; f++) {
-				destroy_bitmap(m_NetworkBackBufferIntermediate8[f][i]);
-				destroy_bitmap(m_NetworkBackBufferIntermediateGUI8[f][i]);
-				destroy_bitmap(m_NetworkBackBufferFinal8[f][i]);
-				destroy_bitmap(m_NetworkBackBufferFinalGUI8[f][i]);
-			}
-		}
-
 		delete m_GUIScreen;
 		delete m_LargeFont;
 		delete m_SmallFont;
@@ -410,15 +360,6 @@ namespace RTE {
 		destroy_bitmap(m_TempBackBuffer32);
 		destroy_bitmap(m_TempOverlayBitmap32);
 		destroy_bitmap(m_TempPlayerScreen);
-
-		for (int i = 0; i < c_MaxScreenCount; i++) {
-			for (int f = 0; f < 2; f++) {
-				destroy_bitmap(m_TempNetworkBackBufferIntermediate8[f][i]);
-				destroy_bitmap(m_TempNetworkBackBufferIntermediateGUI8[f][i]);
-				destroy_bitmap(m_TempNetworkBackBufferFinal8[f][i]);
-				destroy_bitmap(m_TempNetworkBackBufferFinalGUI8[f][i]);
-			}
-		}
 
 		m_ResChanged = false;
 	}
@@ -561,48 +502,6 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	int FrameMan::GetPlayerFrameBufferWidth(int whichPlayer) const {
-		if (IsInMultiplayerMode()) {
-			if (whichPlayer < 0 || whichPlayer >= c_MaxScreenCount) {
-				int width = GetResX();
-				for (int i = 0; i < c_MaxScreenCount; i++) {
-					if (m_NetworkBackBufferFinal8[m_NetworkFrameReady][i] && (m_NetworkBackBufferFinal8[m_NetworkFrameReady][i]->w < width)) {
-						width = m_NetworkBackBufferFinal8[m_NetworkFrameReady][i]->w;
-					}
-				}
-				return width;
-			} else {
-				if (m_NetworkBackBufferFinal8[m_NetworkFrameReady][whichPlayer]) {
-					return m_NetworkBackBufferFinal8[m_NetworkFrameReady][whichPlayer]->w;
-				}
-			}
-		}
-		return m_PlayerScreenWidth;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	int FrameMan::GetPlayerFrameBufferHeight(int whichPlayer) const {
-		if (IsInMultiplayerMode()) {
-			if (whichPlayer < 0 || whichPlayer >= c_MaxScreenCount) {
-				int height = GetResY();
-				for (int i = 0; i < c_MaxScreenCount; i++) {
-					if (m_NetworkBackBufferFinal8[m_NetworkFrameReady][i] && (m_NetworkBackBufferFinal8[m_NetworkFrameReady][i]->h < height)) { 
-						height = m_NetworkBackBufferFinal8[m_NetworkFrameReady][i]->h;
-					}
-				}
-				return height;
-			} else {
-				if (m_NetworkBackBufferFinal8[m_NetworkFrameReady][whichPlayer]) {
-					return m_NetworkBackBufferFinal8[m_NetworkFrameReady][whichPlayer]->h;
-				}
-			}
-		}
-		return m_PlayerScreenHeight;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	int FrameMan::CalculateTextHeight(const std::string &text, int maxWidth, bool isSmall) {
 		return isSmall ? GetSmallFont()->CalculateHeight(text, maxWidth) : GetLargeFont()->CalculateHeight(text, maxWidth);
 	}
@@ -663,26 +562,6 @@ namespace RTE {
 			default:
 				RTEAbort("Undefined transparency preset value passed in. See TransparencyPreset enumeration for defined values.");
 		}
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void FrameMan::CreateNewNetworkPlayerBackBuffer(int player, int width, int height) {
-		for (int f = 0; f < 2; f++) {
-			destroy_bitmap(m_NetworkBackBufferIntermediate8[f][player]);
-			m_NetworkBackBufferIntermediate8[f][player] = create_bitmap_ex(8, width, height);
-
-			destroy_bitmap(m_NetworkBackBufferIntermediateGUI8[f][player]);
-			m_NetworkBackBufferIntermediateGUI8[f][player] = create_bitmap_ex(8, width, height);
-
-			destroy_bitmap(m_NetworkBackBufferFinal8[f][player]);
-			m_NetworkBackBufferFinal8[f][player] = create_bitmap_ex(8, width, height);
-
-			destroy_bitmap(m_NetworkBackBufferFinalGUI8[f][player]);
-			m_NetworkBackBufferFinalGUI8[f][player] = create_bitmap_ex(8, width, height);
-		}
-		m_PlayerScreenWidth = width;
-		m_PlayerScreenHeight = height;
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -981,28 +860,11 @@ namespace RTE {
 
 			BITMAP *drawScreen = (screenCount == 1) ? m_BackBuffer8 : m_PlayerScreen;
 			BITMAP *drawScreenGUI = drawScreen;
-			if (IsInMultiplayerMode()) {
-				drawScreen = m_NetworkBackBufferIntermediate8[m_NetworkFrameCurrent][playerScreen];
-				drawScreenGUI = m_NetworkBackBufferIntermediateGUI8[m_NetworkFrameCurrent][playerScreen];
-			}
 			AllegroBitmap playerGUIBitmap(drawScreenGUI);
 
 			// Update the scene view to line up with a specific screen and then draw it onto the intermediate screen
 			g_SceneMan.Update(playerScreen);
 
-			// Save scene layer's offsets for each screen, server will pick them to build the frame state and send to client
-			if (IsInMultiplayerMode()) {
-				int layerCount = 0;
-
-				for (const SceneLayer *sceneLayer : g_SceneMan.GetScene()->GetBackLayers()) {
-					SLOffset[playerScreen][layerCount] = sceneLayer->GetOffset();
-					layerCount++;
-
-					if (layerCount >= c_MaxLayersStoredForNetwork) {
-						break;
-					}
-				}
-			}
 			Vector targetPos = g_SceneMan.GetOffset(playerScreen);
 
 			// Adjust the drawing position on the target screen for if the target screen is larger than the scene in non-wrapping dimension.
@@ -1010,24 +872,12 @@ namespace RTE {
 			if (!g_SceneMan.SceneWrapsX() && drawScreen->w > g_SceneMan.GetSceneWidth()) { targetPos.m_X += (drawScreen->w - g_SceneMan.GetSceneWidth()) / 2; }
 			if (!g_SceneMan.SceneWrapsY() && drawScreen->h > g_SceneMan.GetSceneHeight()) { targetPos.m_Y += (drawScreen->h - g_SceneMan.GetSceneHeight()) / 2; }
 
-			// Try to move at the frame buffer copy time to maybe prevent wonkyness
-			m_TargetPos[m_NetworkFrameCurrent][playerScreen] = targetPos;
-
-			// Draw the scene
-			if (!IsInMultiplayerMode()) {
-				g_SceneMan.Draw(drawScreen, drawScreenGUI, targetPos);
-			} else {
-				clear_to_color(drawScreen, g_MaskColor);
-				clear_to_color(drawScreenGUI, g_MaskColor);
-				g_SceneMan.Draw(drawScreen, drawScreenGUI, targetPos, true, true);
-			}
+			g_SceneMan.Draw(drawScreen, drawScreenGUI, targetPos);
 
 			// Get only the scene-relative post effects that affect this player's screen
 			if (pActivity) {
 				g_PostProcessMan.GetPostScreenEffectsWrapped(targetPos, drawScreen->w, drawScreen->h, screenRelativeEffects, pActivity->GetTeamOfPlayer(pActivity->PlayerOfScreen(playerScreen)));
 				g_PostProcessMan.GetGlowAreasWrapped(targetPos, drawScreen->w, drawScreen->h, screenRelativeGlowBoxes);
-
-				if (IsInMultiplayerMode()) { g_PostProcessMan.SetNetworkPostEffectsList(playerScreen, screenRelativeEffects); }
 			}
 
 			// TODO: Find out what keeps disabling the clipping on the draw bitmap
@@ -1035,7 +885,7 @@ namespace RTE {
 			set_clip_state(drawScreen, 1);
 
 			DrawScreenText(playerScreen, playerGUIBitmap);
-			
+
 			// The position of the current draw screen on the backbuffer
 			Vector screenOffset;
 
@@ -1043,43 +893,25 @@ namespace RTE {
 			if (screenCount > 1) { UpdateScreenOffsetForSplitScreen(playerScreen, screenOffset); }
 
 			DrawScreenFlash(playerScreen, drawScreenGUI);
-			
-			if (!IsInMultiplayerMode()) { 
-				// Draw the intermediate draw splitscreen to the appropriate spot on the back buffer
-				blit(drawScreen, m_BackBuffer8, 0, 0, screenOffset.GetFloorIntX(), screenOffset.GetFloorIntY(), drawScreen->w, drawScreen->h);
-		
-				g_PostProcessMan.AdjustEffectsPosToPlayerScreen(playerScreen, drawScreen, screenOffset, screenRelativeEffects, screenRelativeGlowBoxes);
-			}
+
+			// Draw the intermediate draw splitscreen to the appropriate spot on the back buffer
+			blit(drawScreen, m_BackBuffer8, 0, 0, screenOffset.GetFloorIntX(), screenOffset.GetFloorIntY(), drawScreen->w, drawScreen->h);
+
+			g_PostProcessMan.AdjustEffectsPosToPlayerScreen(playerScreen, drawScreen, screenOffset, screenRelativeEffects, screenRelativeGlowBoxes);
 		}
 
 		// Clears the pixels that have been revealed from the unseen layers
 		g_SceneMan.ClearSeenPixels();
 
-		if (!IsInMultiplayerMode()) {
-			// Draw separating lines for split-screens
-			if (m_HSplit) {
-				hline(m_BackBuffer8, 0, (m_BackBuffer8->h / 2) - 1, m_BackBuffer8->w - 1, m_AlmostBlackColor);
-				hline(m_BackBuffer8, 0, (m_BackBuffer8->h / 2), m_BackBuffer8->w - 1, m_AlmostBlackColor);
-			}
-			if (m_VSplit) {
-				vline(m_BackBuffer8, (m_BackBuffer8->w / 2) - 1, 0, m_BackBuffer8->h - 1, m_AlmostBlackColor);
-				vline(m_BackBuffer8, (m_BackBuffer8->w / 2), 0, m_BackBuffer8->h - 1, m_AlmostBlackColor);
-			}
-
-			// Replace 8 bit backbuffer contents with network received image before post-processing as it is where this buffer is copied to 32 bit buffer
-			if (GetDrawNetworkBackBuffer()) {
-				m_NetworkBitmapLock[0].lock();
-
-				blit(m_NetworkBackBufferFinal8[m_NetworkFrameReady][0], m_BackBuffer8, 0, 0, 0, 0, m_BackBuffer8->w, m_BackBuffer8->h);
-				masked_blit(m_NetworkBackBufferFinalGUI8[m_NetworkFrameReady][0], m_BackBuffer8, 0, 0, 0, 0, m_BackBuffer8->w, m_BackBuffer8->h);
-
-				if (g_UInputMan.FlagAltState() || g_UInputMan.FlagCtrlState() || g_UInputMan.FlagShiftState()) { g_PerformanceMan.DrawCurrentPing(); }
-
-				m_NetworkBitmapLock[0].unlock();
-			}
+		// Draw separating lines for split-screens
+		if (m_HSplit) {
+			hline(m_BackBuffer8, 0, (m_BackBuffer8->h / 2) - 1, m_BackBuffer8->w - 1, m_AlmostBlackColor);
+			hline(m_BackBuffer8, 0, (m_BackBuffer8->h / 2), m_BackBuffer8->w - 1, m_AlmostBlackColor);
 		}
-
-		if (IsInMultiplayerMode()) { PrepareFrameForNetwork(); }
+		if (m_VSplit) {
+			vline(m_BackBuffer8, (m_BackBuffer8->w / 2) - 1, 0, m_BackBuffer8->h - 1, m_AlmostBlackColor);
+			vline(m_BackBuffer8, (m_BackBuffer8->w / 2), 0, m_BackBuffer8->h - 1, m_AlmostBlackColor);
+		}
 
 		if (g_ActivityMan.IsInActivity()) { g_PostProcessMan.PostProcess(); }
 
@@ -1104,20 +936,17 @@ namespace RTE {
 			textPosY += 12;
 
 			if (!m_ScreenText[playerScreen].empty()) {
-				int bufferOrScreenWidth = IsInMultiplayerMode() ? GetPlayerFrameBufferWidth(playerScreen) : GetPlayerScreenWidth();
-				int bufferOrScreenHeight = IsInMultiplayerMode() ? GetPlayerFrameBufferHeight(playerScreen) : GetPlayerScreenHeight();
-
-				if (m_TextCentered[playerScreen]) { textPosY = (bufferOrScreenHeight / 2) - 52; }
+				if (m_TextCentered[playerScreen]) { textPosY = (m_PlayerScreenHeight / 2) - 52; }
 
 				int screenOcclusionOffsetX = g_SceneMan.GetScreenOcclusion(playerScreen).GetRoundIntX();
 				// If there's really no room to offset the text into, then don't
-				if (GetPlayerScreenWidth() <= GetResX() / 2) { screenOcclusionOffsetX = 0; }
+				if (m_PlayerScreenWidth <= GetResX() / 2) { screenOcclusionOffsetX = 0; }
 
 				// Draw text and handle blinking by turning on and off extra surrounding characters. Text is always drawn to keep it readable.
 				if (m_TextBlinking[playerScreen] && m_TextBlinkTimer.AlternateReal(m_TextBlinking[playerScreen])) {
-					GetLargeFont()->DrawAligned(&playerGUIBitmap, (bufferOrScreenWidth + screenOcclusionOffsetX) / 2, textPosY, ">>> " + m_ScreenText[playerScreen] + " <<<", GUIFont::Centre);
+					GetLargeFont()->DrawAligned(&playerGUIBitmap, (m_PlayerScreenWidth + screenOcclusionOffsetX) / 2, textPosY, ">>> " + m_ScreenText[playerScreen] + " <<<", GUIFont::Centre);
 				} else {
-					GetLargeFont()->DrawAligned(&playerGUIBitmap, (bufferOrScreenWidth + screenOcclusionOffsetX) / 2, textPosY, m_ScreenText[playerScreen], GUIFont::Centre);
+					GetLargeFont()->DrawAligned(&playerGUIBitmap, (m_PlayerScreenWidth + screenOcclusionOffsetX) / 2, textPosY, m_ScreenText[playerScreen], GUIFont::Centre);
 				}
 				textPosY += 12;
 			}
@@ -1125,10 +954,10 @@ namespace RTE {
 			// Draw info text when in MOID or material layer draw mode
 			switch (g_SceneMan.GetLayerDrawMode()) {
 				case g_LayerTerrainMatter:
-					GetSmallFont()->DrawAligned(&playerGUIBitmap, GetPlayerScreenWidth() / 2, GetPlayerScreenHeight() - 12, "Viewing terrain material layer\nHit Ctrl+M to cycle modes", GUIFont::Centre, GUIFont::Bottom);
+					GetSmallFont()->DrawAligned(&playerGUIBitmap, m_PlayerScreenWidth / 2, m_PlayerScreenHeight - 12, "Viewing terrain material layer\nHit Ctrl+M to cycle modes", GUIFont::Centre, GUIFont::Bottom);
 					break;
 				case g_LayerMOID:
-					GetSmallFont()->DrawAligned(&playerGUIBitmap, GetPlayerScreenWidth() / 2, GetPlayerScreenHeight() - 12, "Viewing MovableObject ID layer\nHit Ctrl+M to cycle modes", GUIFont::Centre, GUIFont::Bottom);
+					GetSmallFont()->DrawAligned(&playerGUIBitmap, m_PlayerScreenWidth / 2, m_PlayerScreenHeight - 12, "Viewing MovableObject ID layer\nHit Ctrl+M to cycle modes", GUIFont::Centre, GUIFont::Bottom);
 					break;
 				default:
 					break;
@@ -1137,7 +966,7 @@ namespace RTE {
 
 		} else {
 			// If superfluous screen (as in a three-player match), make the fourth the Observer one
-			GetLargeFont()->DrawAligned(&playerGUIBitmap, GetPlayerScreenWidth() / 2, textPosY, "- Observer View -", GUIFont::Centre);
+			GetLargeFont()->DrawAligned(&playerGUIBitmap, m_PlayerScreenWidth / 2, textPosY, "- Observer View -", GUIFont::Centre);
 		}
 	}
 
@@ -1215,50 +1044,5 @@ namespace RTE {
 				}
 			}
 		}
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void FrameMan::PrepareFrameForNetwork() {
-		int dx = 0;
-		int dy = 0;
-		int dw = m_BackBuffer8->w / 2;
-		int dh = m_BackBuffer8->h / 2;
-
-		// Blit all four internal player screens onto the backbuffer
-		for (int i = 0; i < c_MaxScreenCount; i++) {
-			dx = (i == 1 || i == 3) ? dw : dx;
-			dy = (i == 2 || i == 3) ? dh : dy;
-
-			m_NetworkBitmapLock[i].lock();
-			blit(m_NetworkBackBufferIntermediate8[m_NetworkFrameCurrent][i], m_NetworkBackBufferFinal8[m_NetworkFrameCurrent][i], 0, 0, 0, 0, m_NetworkBackBufferFinal8[m_NetworkFrameCurrent][i]->w, m_NetworkBackBufferFinal8[m_NetworkFrameCurrent][i]->h);
-			blit(m_NetworkBackBufferIntermediateGUI8[m_NetworkFrameCurrent][i], m_NetworkBackBufferFinalGUI8[m_NetworkFrameCurrent][i], 0, 0, 0, 0, m_NetworkBackBufferFinalGUI8[m_NetworkFrameCurrent][i]->w, m_NetworkBackBufferFinalGUI8[m_NetworkFrameCurrent][i]->h);
-			m_NetworkBitmapLock[i].unlock();
-
-#ifndef RELEASE_BUILD
-			// Draw all player's screen into one
-			if (g_UInputMan.KeyHeld(KEY_5)) {
-				stretch_blit(m_NetworkBackBufferFinal8[m_NetworkFrameCurrent][i], m_BackBuffer8, 0, 0, m_NetworkBackBufferFinal8[m_NetworkFrameReady][i]->w, m_NetworkBackBufferFinal8[m_NetworkFrameReady][i]->h, dx, dy, dw, dh);
-			}
-#endif
-		}
-
-#ifndef RELEASE_BUILD
-		if (g_UInputMan.KeyHeld(KEY_1)) {
-			stretch_blit(m_NetworkBackBufferFinal8[0][0], m_BackBuffer8, 0, 0, m_NetworkBackBufferFinal8[m_NetworkFrameReady][0]->w, m_NetworkBackBufferFinal8[m_NetworkFrameReady][0]->h, 0, 0, m_BackBuffer8->w, m_BackBuffer8->h);
-		}
-		if (g_UInputMan.KeyHeld(KEY_2)) {
-			stretch_blit(m_NetworkBackBufferFinal8[1][0], m_BackBuffer8, 0, 0, m_NetworkBackBufferFinal8[m_NetworkFrameReady][1]->w, m_NetworkBackBufferFinal8[m_NetworkFrameReady][1]->h, 0, 0, m_BackBuffer8->w, m_BackBuffer8->h);
-		}
-		if (g_UInputMan.KeyHeld(KEY_3)) {
-			stretch_blit(m_NetworkBackBufferFinal8[m_NetworkFrameReady][2], m_BackBuffer8, 0, 0, m_NetworkBackBufferFinal8[m_NetworkFrameReady][2]->w, m_NetworkBackBufferFinal8[m_NetworkFrameReady][2]->h, 0, 0, m_BackBuffer8->w, m_BackBuffer8->h);
-		}
-		if (g_UInputMan.KeyHeld(KEY_4)) {
-			stretch_blit(m_NetworkBackBufferFinal8[m_NetworkFrameReady][3], m_BackBuffer8, 0, 0, m_NetworkBackBufferFinal8[m_NetworkFrameReady][3]->w, m_NetworkBackBufferFinal8[m_NetworkFrameReady][3]->h, 0, 0, m_BackBuffer8->w, m_BackBuffer8->h);
-		}
-#endif
-		// Rendering complete, we can finally mark current frame as ready. This is needed to make rendering look totally atomic for the server pulling data in separate threads.
-		m_NetworkFrameReady = m_NetworkFrameCurrent;
-		m_NetworkFrameCurrent = (m_NetworkFrameCurrent == 0) ? 1 : 0;
 	}
 }
