@@ -95,12 +95,6 @@ namespace RTE {
 		void SetTopLevelSoundSet(const SoundSet &newTopLevelSoundSet) { m_TopLevelSoundSet = newTopLevelSoundSet; m_SoundPropertiesUpToDate = false; }
 
 		/// <summary>
-		/// Gets a vector of hashes of the sounds selected to be played next in this SoundContainer.
-		/// </summary>
-		/// <returns>The currently playing sounds hashes.</returns>
-		std::vector<std::size_t> GetSelectedSoundHashes() const;
-
-		/// <summary>
 		/// Gets the SoundData object that corresponds to the given FMOD::Sound. If the sound can't be found, it returns a null pointer.
 		/// </summary>
 		/// <param name="sound">The FMOD::Sound to search for.</param>

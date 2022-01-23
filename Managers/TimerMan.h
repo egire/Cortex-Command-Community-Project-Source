@@ -204,14 +204,6 @@ namespace RTE {
 		void Update();
 #pragma endregion
 
-#pragma region Network Handling
-		/// <summary>
-		/// Gets the duration the thread should be put to sleep. This is used when ServerSimSleepWhenIdle is true to put the thread to sleep if the sim frame is finished faster than it usually should.
-		/// </summary>
-		/// <returns>The duration the thread should be put to sleep.</returns>
-		long long GetTimeToSleep() const { return (m_DeltaTime - m_SimAccumulator) / 2; };
-#pragma endregion
-
 	protected:
 
 		long long m_StartTime; //!< The point in real time when the simulation (re)started.

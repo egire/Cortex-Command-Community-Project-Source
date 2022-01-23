@@ -144,18 +144,6 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	std::vector<std::size_t> SoundContainer::GetSelectedSoundHashes() const {
-		std::vector<size_t> soundHashes;
-		std::vector<const SoundSet::SoundData *> flattenedSoundData;
-		m_TopLevelSoundSet.GetFlattenedSoundData(flattenedSoundData, false);
-		for (const SoundSet::SoundData *selectedSoundData : flattenedSoundData) {
-			soundHashes.push_back(selectedSoundData->SoundFile.GetHash());
-		}
-		return soundHashes;
-	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
 	const SoundSet::SoundData * SoundContainer::GetSoundDataForSound(const FMOD::Sound *sound) const {
 		std::vector<const SoundSet::SoundData *> flattenedSoundData;
 		m_TopLevelSoundSet.GetFlattenedSoundData(flattenedSoundData, false);
