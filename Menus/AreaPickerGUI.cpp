@@ -173,12 +173,12 @@ void AreaPickerGUI::SetEnabled(bool enable)
         m_RepeatStartTimer.Reset();
         m_RepeatTimer.Reset();
         // Set the mouse cursor free
-        g_UInputMan.TrapMousePos(false);
+        g_UInputMan.TrapMousePos(false, m_pController->GetPlayer());
         // Move the mouse cursor to the middle of the player's screen
         int mouseOffX, mouseOffY;
         m_pGUIInput->GetMouseOffset(mouseOffX, mouseOffY);
         Vector mousePos(-mouseOffX + (g_FrameMan.GetPlayerScreenWidth() / 2), -mouseOffY + (g_FrameMan.GetPlayerScreenHeight() / 2));
-        g_UInputMan.SetMousePos(mousePos);
+        g_UInputMan.SetMousePos(mousePos, m_pController->GetPlayer());
         g_GUISound.EnterMenuSound()->Play();
 
         // Repopulate with the current Scene's list of Area:s
@@ -188,7 +188,7 @@ void AreaPickerGUI::SetEnabled(bool enable)
     {
         m_PickerEnabled = DISABLING;
         // Trap the mouse cursor again
-        g_UInputMan.TrapMousePos(true);
+        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
         // Only play switching away sound
 //        if (!m_pPickedArea)
             g_GUISound.ExitMenuSound()->Play();

@@ -290,10 +290,11 @@ namespace RTE {
 		void SetMouseValueMagnitude(float magCap);
 
 		/// <summary>
-		/// Sets the absolute screen position of the mouse cursor. Only the player with actual control over the mouse will be affected.
+		/// Sets the absolute screen position of the mouse cursor.
 		/// </summary>
 		/// <param name="newPos">Where to place the mouse.</param>
-		void SetMousePos(Vector &newPos) const;
+		/// <param name="whichPlayer">Which player is trying to control the mouse. Only the player with actual control over the mouse will be affected. -1 means do it regardless of player.</param>
+		void SetMousePos(Vector &newPos, int whichPlayer = -1) const;
 
 		/// <summary>
 		/// Gets mouse sensitivity.
@@ -311,22 +312,25 @@ namespace RTE {
 		/// Gets whether a mouse button is being held down right now.
 		/// </summary>
 		/// <param name="whichButton">Which button to check for.</param>
+		/// <param name="whichPlayer">Which player to check for.</param>
 		/// <returns>Whether the mouse button is held or not.</returns>
-		bool MouseButtonHeld(int whichButton) const { return GetMouseButtonState(whichButton, InputState::Held); }
+		bool MouseButtonHeld(int whichButton, int whichPlayer = Players::PlayerOne) const { return GetMouseButtonState(whichPlayer, whichButton, InputState::Held); }
 
 		/// <summary>
 		/// Gets whether a mouse button was pressed between the last update and the one previous to it.
 		/// </summary>
 		/// <param name="whichButton">Which button to check for.</param>
+		/// <param name="whichPlayer">Which player to check for.</param>
 		/// <returns>Whether the mouse button is pressed or not.</returns>
-		bool MouseButtonPressed(int whichButton) const { return GetMouseButtonState(whichButton, InputState::Pressed); }
+		bool MouseButtonPressed(int whichButton, int whichPlayer = Players::PlayerOne) const { return GetMouseButtonState(whichPlayer, whichButton, InputState::Pressed); }
 
 		/// <summary>
 		/// Gets whether a mouse button was released between the last update and the one previous to it.
 		/// </summary>
 		/// <param name="whichButton">Which button to check for.</param>
+		/// <param name="whichPlayer">Which player to check for.</param>
 		/// <returns>Whether the mouse button is released or not.</returns>
-		bool MouseButtonReleased(int whichButton) const { return GetMouseButtonState(whichButton, InputState::Released); }
+		bool MouseButtonReleased(int whichButton, int whichPlayer = Players::PlayerOne) const { return GetMouseButtonState(whichPlayer, whichButton, InputState::Released); }
 
 		/// <summary>
 		/// Gets whether the mouse wheel has been moved past the threshold limit in either direction this frame.
@@ -341,20 +345,22 @@ namespace RTE {
 		bool AnyMouseButtonPress() const;
 
 		/// <summary>
-		/// Sets the mouse to be trapped in the middle of the screen so it doesn't go out and click on other windows etc. Only the player with actual control over the mouse will be affected.
+		/// Sets the mouse to be trapped in the middle of the screen so it doesn't go out and click on other windows etc.
 		/// This is usually used when the cursor is invisible and only relative mouse movements are used.
 		/// </summary>
 		/// <param name="trap">Whether to trap the mouse or not.</param>
-		void TrapMousePos(bool trap = true) { m_TrapMousePos = trap; }
+		/// <param name="whichPlayer">Which player is trying to control the mouse. Only the player with actual control over the mouse will be affected. -1 means change mouse trapping regardless of player.</param>
+		void TrapMousePos(bool trap = true, int whichPlayer = -1);
 
 		/// <summary>
-		/// Forces the mouse within a box on the screen. Only the player with actual control over the mouse will be affected.
+		/// Forces the mouse within a box on the screen.
 		/// </summary>
 		/// <param name="x">X value of the top left corner of the screen box to keep the mouse within, in screen coordinates.</param>
 		/// <param name="y">Y value of the top left corner of the screen box to keep the mouse within, in screen coordinates.</param>
 		/// <param name="width">The width of the box.</param>
 		/// <param name="height">The height of the box.</param>
-		void ForceMouseWithinBox(int x, int y, int width, int height) const;
+		/// <param name="whichPlayer">Which player is trying to control the mouse. Only the player with actual control over the mouse will be affected. -1 means do it regardless of player.</param>
+		void ForceMouseWithinBox(int x, int y, int width, int height, int whichPlayer = -1) const;
 
 		/// <summary>
 		/// Forces the mouse within a specific player's screen area.
@@ -564,10 +570,11 @@ namespace RTE {
 		/// <summary>
 		/// Gets whether a mouse button is in the specified state.
 		/// </summary>
+		/// <param name="whichPlayer">Which player to check for. See Players enumeration.</param>
 		/// <param name="whichButton">Which mouse button to check for. See MouseButtons enumeration.</param>
 		/// <param name="whichState">Which state to check for. See InputState enumeration.</param>
 		/// <returns>Whether the mouse button is in the specified state or not.</returns>
-		bool GetMouseButtonState(int whichButton, InputState whichState) const;
+		bool GetMouseButtonState(int whichPlayer, int whichButton, InputState whichState) const;
 
 		/// <summary>
 		/// Gets whether a joystick button is in the specified state.

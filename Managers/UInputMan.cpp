@@ -313,16 +313,18 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void UInputMan::SetMousePos(Vector &newPos) const {
+	void UInputMan::SetMousePos(Vector &newPos, int whichPlayer) const {
 		// Only mess with the mouse if the original mouse position is not above the screen and may be grabbing the title bar of the game window
-		if (!m_DisableMouseMoving && !m_TrapMousePos) { position_mouse(static_cast<int>(newPos.GetX()), static_cast<int>(newPos.GetY())); }
+		if (!m_DisableMouseMoving && !m_TrapMousePos && (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB)) {
+			position_mouse(static_cast<int>(newPos.GetX()), static_cast<int>(newPos.GetY()));
+		}
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool UInputMan::AnyMouseButtonPress() const {
 		for (int button = MouseButtons::MOUSE_LEFT; button < MouseButtons::MAX_MOUSE_BUTTONS; ++button) {
-			if (MouseButtonPressed(button)) {
+			if (MouseButtonPressed(button, -1)) {
 				return true;
 			}
 		}
@@ -331,43 +333,52 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void UInputMan::ForceMouseWithinBox(int x, int y, int width, int height) const {
+	void UInputMan::TrapMousePos(bool trap, int whichPlayer) {
+		if (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB) { m_TrapMousePos = trap; }
+	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void UInputMan::ForceMouseWithinBox(int x, int y, int width, int height, int whichPlayer) const {
 		// Only mess with the mouse if the original mouse position is not above the screen and may be grabbing the title bar of the game window
-		if (!m_DisableMouseMoving && !m_TrapMousePos) { position_mouse(Limit(mouse_x, x + width * g_FrameMan.GetResMultiplier(), x), Limit(mouse_y, y + height * g_FrameMan.GetResMultiplier(), y)); }
+		if (!m_DisableMouseMoving && !m_TrapMousePos && (whichPlayer == Players::NoPlayer || m_ControlScheme.at(whichPlayer).GetDevice() == InputDevice::DEVICE_MOUSE_KEYB)) {
+			position_mouse(Limit(mouse_x, x + width, x), Limit(mouse_y, y + height, y));
+		}
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void UInputMan::ForceMouseWithinPlayerScreen(int whichPlayer) const {
-		if (whichPlayer < Players::PlayerOne || whichPlayer >= Players::PlayerFour) {
-			return;
-		}
-		unsigned int screenWidth = g_FrameMan.GetPlayerScreenWidth();
-		unsigned int screenHeight = g_FrameMan.GetPlayerScreenHeight();
+		if (whichPlayer >= Players::PlayerOne && whichPlayer < Players::MaxPlayerCount) {
+			int screenWidth = g_FrameMan.GetPlayerScreenWidth() * g_FrameMan.GetResMultiplier();
+			int screenHeight = g_FrameMan.GetPlayerScreenHeight() * g_FrameMan.GetResMultiplier();
+			int screenCount = g_FrameMan.GetScreenCount();
 
-		if (g_FrameMan.GetScreenCount() > 1) {
-			switch (whichPlayer) {
-				case Players::PlayerOne:
-					ForceMouseWithinBox(0, 0, screenWidth, screenHeight);
-					break;
-				case Players::PlayerTwo:
-					if ((g_FrameMan.GetVSplit() && !g_FrameMan.GetHSplit()) || (g_FrameMan.GetVSplit() && g_FrameMan.GetHSplit())) {
-						ForceMouseWithinBox(g_FrameMan.GetResX() / 2, 0, screenWidth, screenHeight);
-					} else {
-						ForceMouseWithinBox(0, g_FrameMan.GetResY() / 2, screenWidth, screenHeight);
-					}
-					break;
-				case Players::PlayerThree:
-					ForceMouseWithinBox(0, g_FrameMan.GetResY() / 2, screenWidth, screenHeight);
-					break;
-				case Players::PlayerFour:
-					ForceMouseWithinBox(g_FrameMan.GetResX() / 2, g_FrameMan.GetResY() / 2, screenWidth, screenHeight);
-					break;
-				default:
-					RTEAbort("Undefined player value passed in. See Players enumeration for defined values.")
+			if (screenCount > 1) {
+				switch (g_ActivityMan.GetActivity()->ScreenOfPlayer(whichPlayer)) {
+					case 0:
+						ForceMouseWithinBox(0, 0, screenWidth, screenHeight, whichPlayer);
+						break;
+					case 1:
+						if (screenCount >= 2 && g_FrameMan.GetVSplit()) {
+							ForceMouseWithinBox(screenWidth, 0, screenWidth, screenHeight, whichPlayer);
+						} else {
+							ForceMouseWithinBox(0, screenHeight, screenWidth, screenHeight, whichPlayer);
+						}
+						break;
+					case 2:
+						ForceMouseWithinBox(0, screenHeight, screenWidth, screenHeight, whichPlayer);
+						break;
+					case 3:
+						ForceMouseWithinBox(screenWidth, screenHeight, screenWidth, screenHeight, whichPlayer);
+						break;
+					default:
+						// ScreenOfPlayer will return -1 for inactive player so do nothing.
+						break;
+				}
+			} else {
+				ForceMouseWithinBox(0, 0, screenWidth, screenHeight, whichPlayer);
 			}
-		} else {
-			ForceMouseWithinBox(0, 0, screenWidth, screenHeight);
 		}
 	}
 
@@ -467,7 +478,7 @@ namespace RTE {
 		if (!elementState && device == InputDevice::DEVICE_KEYB_ONLY || (device == InputDevice::DEVICE_MOUSE_KEYB && !(whichElement == InputElements::INPUT_AIM_UP || whichElement == InputElements::INPUT_AIM_DOWN))) {
 			elementState = GetKeyboardButtonState(static_cast<char>(element->GetKey()),whichState);
 		}
-		if (!elementState && device == InputDevice::DEVICE_MOUSE_KEYB && m_TrapMousePos) { elementState = GetMouseButtonState(element->GetMouseButton(), whichState); }
+		if (!elementState && device == InputDevice::DEVICE_MOUSE_KEYB && m_TrapMousePos) { elementState = GetMouseButtonState(whichPlayer, element->GetMouseButton(), whichState); }
 
 		if (!elementState && device >= InputDevice::DEVICE_GAMEPAD_1) {
 			int whichJoy = GetJoystickIndex(device);
@@ -484,10 +495,10 @@ namespace RTE {
 			bool buttonState = false;
 			InputDevice device = m_ControlScheme.at(player).GetDevice();
 			if (!buttonState && whichButton >= MenuCursorButtons::MENU_PRIMARY) {
-				buttonState = GetInputElementState(player, InputElements::INPUT_FIRE, whichState) || GetMouseButtonState(MouseButtons::MOUSE_LEFT, whichState);
+				buttonState = GetInputElementState(player, InputElements::INPUT_FIRE, whichState) || GetMouseButtonState(player, MouseButtons::MOUSE_LEFT, whichState);
 			}
 			if (!buttonState && whichButton >= MenuCursorButtons::MENU_SECONDARY) {
-				buttonState = GetInputElementState(player, InputElements::INPUT_PIEMENU, whichState) || GetMouseButtonState(MouseButtons::MOUSE_RIGHT, whichState);
+				buttonState = GetInputElementState(player, InputElements::INPUT_PIEMENU, whichState) || GetMouseButtonState(player, MouseButtons::MOUSE_RIGHT, whichState);
 			}
 			if (buttonState) {
 				m_LastDeviceWhichControlledGUICursor = device;
@@ -518,7 +529,7 @@ namespace RTE {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	bool UInputMan::GetMouseButtonState(int whichButton, InputState whichState) const {
+	bool UInputMan::GetMouseButtonState(int whichPlayer, int whichButton, InputState whichState) const {
 		if (whichButton < MouseButtons::MOUSE_LEFT || whichButton >= MouseButtons::MAX_MOUSE_BUTTONS) {
 			return false;
 		}

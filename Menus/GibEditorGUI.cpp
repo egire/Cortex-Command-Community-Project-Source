@@ -377,7 +377,7 @@ void GibEditorGUI::Update()
         m_DrawCurrentGib = true;
 
         // Trap the mouse cursor
-        g_UInputMan.TrapMousePos(true);
+        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
 
         // Move the cursor according to analog or mouse input
         if (!analogInput.IsZero())
@@ -564,7 +564,7 @@ void GibEditorGUI::Update()
         m_DrawCurrentGib = false;
 
         // Trap the mouse cursor
-        g_UInputMan.TrapMousePos(true);
+        g_UInputMan.TrapMousePos(true, m_pController->GetPlayer());
 
         // Move the cursor according to analog or mouse input
         if (!analogInput.IsZero())
