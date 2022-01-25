@@ -142,7 +142,10 @@ namespace RTE {
 
 		m_LastFrameMouseX = mouse_x;
 		m_LastFrameMouseY = mouse_y;
+
+#ifndef GUI_STANDALONE
 		m_MouseWheelChange = g_UInputMan.MouseWheelMoved();
+#endif
 
 		if (!m_KeyJoyMouseCursor) {
 			if (mouse_b & AllegroMouseButtons::ButtonLeft) {
