@@ -105,11 +105,9 @@ void Actor::Clear() {
     m_Inventory.clear();
 	m_MaxInventoryMass = -1.0F;
 	m_pItemInReach = nullptr;
-    m_PieNeedsUpdate = false;
     m_HUDStack = 0;
     m_FlashWhiteMS = 0;
     m_WhiteFlashTimer.Reset();
-    m_PieSlices.clear();
 	m_DeploymentID = 0;
     m_PassengerSlots = 1;
 
@@ -136,6 +134,8 @@ void Actor::Clear() {
     m_DigStrength = 1;
 
     m_DamageMultiplier = 1.0F;
+
+    m_PieMenu.reset();
 }
 
 
@@ -168,6 +168,13 @@ int Actor::Create()
 	// All brain actors by default avoid hitting each other ont he same team
 	if (IsInGroup("Brains"))
 		m_IgnoresTeamHits = true;
+
+    if (!m_PieMenu) { SetPieMenu(static_cast<PieMenuGUI *>(g_PresetMan.GetEntityPreset("PieMenuGUI", GetDefaultPieMenuName())->Clone())); }
+
+	if (m_PieMenu) {
+		m_PieMenu->AddPieMenuOpenListener(this, std::bind(&Actor::PieMenuOpenListener, this));
+		m_PieMenu->AddPieMenuCloseListener(this, std::bind(&Actor::PieMenuCloseListener, this));
+	}
 
     return 0;
 }
@@ -228,9 +235,6 @@ int Actor::Create(const Actor &reference)
 
     m_MaxInventoryMass = reference.m_MaxInventoryMass;
 
-    for (list<PieSlice>::const_iterator itr = reference.m_PieSlices.begin(); itr != reference.m_PieSlices.end(); ++itr)
-        m_PieSlices.push_back(*itr);
-    
     // Only load the static AI mode icons once
     if (!m_sIconsLoaded)
     {
@@ -282,6 +286,11 @@ int Actor::Create(const Actor &reference)
     m_LateralMoveState = reference.m_LateralMoveState;
     m_ObstacleState = reference.m_ObstacleState;
     m_TeamBlockState = reference.m_TeamBlockState;
+
+	RTEAssert(reference.m_PieMenu != nullptr, "Tried to clone actor with no pie menu.");
+	SetPieMenu(static_cast<PieMenuGUI *>(reference.m_PieMenu->Clone()));
+	m_PieMenu->AddPieMenuOpenListener(this, std::bind(&Actor::PieMenuOpenListener, this));
+	m_PieMenu->AddPieMenuCloseListener(this, std::bind(&Actor::PieMenuCloseListener, this));
 
 
     return 0;
@@ -365,18 +374,14 @@ int Actor::ReadProperty(const std::string_view &propName, Reader &reader)
     }
     else if (propName == "MaxInventoryMass")
         reader >> m_MaxInventoryMass;
-    else if (propName == "AddPieSlice")
-    {
-        PieSlice newSlice;
-        reader >> newSlice;
-        m_PieSlices.push_back(newSlice);
-		PieMenuGUI::StoreCustomLuaPieSlice(newSlice);
-    }
     else if (propName == "AIMode")
     {
         int mode;
         reader >> mode;
         m_AIMode = static_cast<AIMode>(mode);
+    } else if (propName == "PieMenu") {
+        m_PieMenu = std::unique_ptr<PieMenuGUI>(dynamic_cast<PieMenuGUI *>(g_PresetMan.ReadReflectedPreset(reader)));
+        m_PieMenu->Create(this);
     }
     else
         return MOSRotating::ReadProperty(propName, reader);
@@ -445,13 +450,10 @@ int Actor::Save(Writer &writer) const
     }
     writer.NewProperty("MaxInventoryMass");
     writer << m_MaxInventoryMass;
-    for (list<PieSlice>::const_iterator itr = m_PieSlices.begin(); itr != m_PieSlices.end(); ++itr)
-    {
-        writer.NewProperty("AddPieSlice");
-        writer << *itr;
-    }
     writer.NewProperty("AIMode");
     writer << m_AIMode;
+    writer.NewProperty("PieMenu");
+    writer << m_PieMenu.get();
 
     return 0;
 }
@@ -616,9 +618,6 @@ void Actor::SetControllerMode(Controller::InputMode newMode, int newPlayer)
     m_Controller.SetInputMode(newMode);
     m_Controller.SetPlayer(newPlayer);
 
-    // Needs to update the pie menu if we were switched to/from
-    m_PieNeedsUpdate = true;
-
     // So the AI doesn't jerk around
     m_StuckTimer.Reset();
 
@@ -637,9 +636,6 @@ Controller::InputMode Actor::SwapControllerModes(Controller::InputMode newMode, 
     Controller::InputMode returnMode = m_Controller.GetInputMode();
     m_Controller.SetInputMode(newMode);
     m_Controller.SetPlayer(newPlayer);
-
-    // Needs to update the pie menu if we were switched to/from
-    m_PieNeedsUpdate = true;
 
     // So the AI doesn't jerk around
     m_StuckTimer.Reset();
@@ -721,22 +717,6 @@ void Actor::RestDetection()
         m_RestTimer.Reset();
         m_ToSettle = false;
     }
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Virtual method:  AddPieMenuSlices
-//////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Adds all slices this needs on a pie menu.
-
-bool Actor::AddPieMenuSlices(PieMenuGUI *pPieMenu)
-{
-    // Add the custom scripted options of this Actor
-    for (list<PieSlice>::iterator itr = m_PieSlices.begin(); itr != m_PieSlices.end(); ++itr)
-        pPieMenu->AddSlice(*itr);
-
-    m_PieNeedsUpdate = false;
-    return true;
 }
 
 
@@ -1373,6 +1353,8 @@ void Actor::Update()
     // Hit Body update and handling
     MOSRotating::Update();
 
+	m_PieMenu->Update();
+
     // Update the viewpoint to be at least what the position is
     m_ViewPoint = m_Pos;
 
@@ -1867,6 +1849,8 @@ void Actor::DrawHUD(BITMAP *pTargetBitmap, const Vector &targetPos, int whichScr
     // Don't proceed to draw all the secret stuff below if this screen is for a player on the other team!
     if (g_ActivityMan.GetActivity() && g_ActivityMan.GetActivity()->GetTeamOfPlayer(whichScreen) != m_Team)
         return;
+
+	if (m_PieMenu->IsVisible()) { m_PieMenu->Draw(pTargetBitmap, targetPos); }
 
     // AI waypoints or points of interest
     if (m_DrawWaypoints && (m_AIMode == AIMODE_GOTO || m_AIMode == AIMODE_SQUAD))
