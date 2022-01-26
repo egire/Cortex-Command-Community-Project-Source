@@ -36,9 +36,7 @@ enum HeldDeviceType
 // Class history:   06/2/2002 HeldDevice created.
 //                  01/31/2007 Made concrete so Shields can be jsut HeldDevice:s
 
-class HeldDevice:
-    public Attachable
-{
+class HeldDevice : public Attachable {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -48,9 +46,9 @@ public:
 
 
 // Concrete allocation and cloning definitions
-EntityAllocation(HeldDevice)
-SerializableOverrideMethods
-ClassInfoGetters
+EntityAllocation(HeldDevice);
+SerializableOverrideMethods;
+ClassInfoGetters;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -517,7 +515,7 @@ ClassInfoGetters
 // Arguments:       None.
 // Return value:    Whetehr magazine is full or not.
 
-    virtual bool IsFull() const { return false; }
+    virtual bool IsFull() const { return true; }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -623,6 +621,8 @@ protected:
     // If this HeldDevice is currently being supported by a second hand.
     bool m_Supported;
     bool m_IsUnPickupable; //!< Whether or not this HeldDevice should be able to be picked up at all.
+	//TODO: move this smelly thing elsewhere
+	std::array<bool, Players::MaxPlayerCount> m_SeenByPlayer; //!< An array of players that can currently see the pickup HUD of this HeldDevice.
     std::unordered_set<std::string> m_PickupableByPresetNames; //!< The unordered set of PresetNames that can pick up this HeldDevice if it's dropped. An empty set means there are no PresetName limitations.
     float m_GripStrengthMultiplier; //!< The multiplier for how well this HeldDevice can be gripped by Arms.
     // Blink timer for the icon

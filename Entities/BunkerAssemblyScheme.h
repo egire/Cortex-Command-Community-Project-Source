@@ -34,9 +34,7 @@ class ContentFile;
 // Parent(s):       SceneObject.
 // Class history:   08/23/2002 BunkerAssemblyScheme created.
 
-class BunkerAssemblyScheme:
-    public SceneObject
-{
+class BunkerAssemblyScheme : public SceneObject {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -66,9 +64,9 @@ public:
 	const static int SchemeWidth = 2;
 
 // Concrete allocation and cloning definitions
-EntityAllocation(BunkerAssemblyScheme)
-SerializableOverrideMethods
-ClassInfoGetters
+EntityAllocation(BunkerAssemblyScheme);
+SerializableOverrideMethods;
+ClassInfoGetters;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Constructor:     BunkerAssemblyScheme

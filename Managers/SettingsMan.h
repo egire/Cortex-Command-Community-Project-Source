@@ -15,21 +15,20 @@ namespace RTE {
 
 	public:
 
-		SerializableClassNameGetter
-		SerializableOverrideMethods
+		SerializableClassNameGetter;
+		SerializableOverrideMethods;
 
 #pragma region Creation
 		/// <summary>
-		/// Constructor method used to instantiate a SettingsMan object in system memory. Create() should be called before using the object.
+		/// Constructor method used to instantiate a SettingsMan object in system memory. Initialize() should be called before using the object.
 		/// </summary>
 		SettingsMan() { Clear(); }
 
 		/// <summary>
 		/// Makes the SettingsMan object ready for use.
 		/// </summary>
-		/// <param name="reader">A Reader that the SettingsMan will create itself from.</param>
 		/// <returns>An error return value signaling success or any particular failure. Anything below 0 is an error signal.</returns>
-		int Initialize(Reader &reader);
+		int Initialize();
 #pragma endregion
 
 #pragma region Destruction
@@ -63,6 +62,12 @@ namespace RTE {
 		/// </summary>
 		/// <returns>Recommended MOID count.</returns>
 		int RecommendedMOIDCount() const { return m_RecommendedMOIDCount; }
+
+		/// <summary>
+		/// Gets whether simplified collision detection (reduced MOID layer sampling) is enabled.
+		/// </summary>
+		/// <returns>Whether simplified collision detection is enabled or not.</returns>
+		bool SimplifiedCollisionDetection() const { return m_SimplifiedCollisionDetection; }
 #pragma endregion
 
 #pragma region Gameplay Settings
@@ -89,6 +94,18 @@ namespace RTE {
 		/// </summary>
 		/// <param name="newValue">New value for Blip on reveal unseen option.</param>
 		void SetBlipOnRevealUnseen(bool newValue) { m_BlipOnRevealUnseen = newValue; }
+
+		/// <summary>
+		/// Gets the range in which devices on Scene will show the pick-up HUD.
+		/// </summary>
+		/// <returns>The range in which devices on Scene will show the pick-up HUD, in pixels. 0 means HUDs are hidden, -1 means unlimited range.</returns>
+		float GetUnheldItemsHUDDisplayRange() const { return m_UnheldItemsHUDDisplayRange; }
+
+		/// <summary>
+		/// Sets the range in which devices on Scene will show the pick-up HUD.
+		/// </summary>
+		/// <param name="newRadius">The new range in which devices on Scene will show the pick-up HUD, in pixels. 0 means HUDs are hidden, -1 means unlimited range.</param>
+		void SetUnheldItemsHUDDisplayRange(float newRadius) { m_UnheldItemsHUDDisplayRange = std::floor(newRadius); }
 
 		/// <summary>
 		/// Whether red and white flashes appear when brain is damaged.
@@ -149,6 +166,18 @@ namespace RTE {
 		/// </summary>
 		/// <param name="showHUD">Whether the HUD of enemy Actors should be visible to the player or not.</param>
 		void SetShowEnemyHUD(bool showHUD) { m_ShowEnemyHUD = showHUD; }
+
+		/// <summary>
+		/// Gets whether smart BuyMenu navigation is enabled, meaning swapping to equipment mode and back will change active tabs in the BuyMenu.
+		/// </summary>
+		/// <returns>Whether smart BuyMenu navigation is enabled or not.</returns>
+		bool SmartBuyMenuNavigationEnabled() const { return m_EnableSmartBuyMenuNavigation; }
+
+		/// <summary>
+		/// Sets whether smart BuyMenu navigation is enabled, meaning swapping to equipment mode and back will change active tabs in the BuyMenu.
+		/// </summary>
+		/// <param name="enable">Whether to enable smart BuyMenu navigation or not.</param>
+		void SetSmartBuyMenuNavigation(bool enable) { m_EnableSmartBuyMenuNavigation = enable; }
 #pragma endregion
 
 #pragma region Network Settings
@@ -384,10 +413,12 @@ namespace RTE {
 		bool m_ShowForeignItems; //!< Do not show foreign items in buy menu.
 		bool m_FlashOnBrainDamage; //!< Whether red flashes on brain damage are on or off.
 		bool m_BlipOnRevealUnseen; //!< Blip if unseen is revealed.
+		float m_UnheldItemsHUDDisplayRange; //!< Range in which devices on Scene will show the pick-up HUD, in pixels. 0 means HUDs are hidden, -1 means unlimited range.
 		bool m_EndlessMetaGameMode; //!< Endless MetaGame mode.
 		bool m_EnableCrabBombs; //!< Whether all actors (except Brains and Doors) should be annihilated if a number exceeding the crab bomb threshold is released at once.
 		int m_CrabBombThreshold; //!< The number of crabs needed to be released at once to trigger the crab bomb effect.
 		bool m_ShowEnemyHUD; //!< Whether the HUD of enemy actors should be visible to the player.
+		bool m_EnableSmartBuyMenuNavigation; //!< Whether swapping to equipment mode and back should change active tabs in the BuyMenu.
 
 		std::string m_PlayerNetworkName; //!< Player name used in network multiplayer matches.
 		std::string m_NetworkServerAddress; //!< LAN server address to connect to.
@@ -399,6 +430,7 @@ namespace RTE {
 		bool m_ShowMetaScenes; //!< Show MetaScenes in editors and activities.
 
 		int m_RecommendedMOIDCount; //!< Recommended max MOID's before removing actors from scenes.
+		bool m_SimplifiedCollisionDetection; //!< Whether simplified collision detection (reduced MOID layer sampling) is enabled.
 
 		bool m_SkipIntro; //!< Whether to play the intro of the game or skip directly to the main menu.
 		bool m_ShowToolTips; //!< Whether ToolTips are enabled or not.
@@ -419,6 +451,8 @@ namespace RTE {
 	private:
 
 		static const std::string c_ClassName; //!< A string with the friendly-formatted type name of this.
+
+		std::string m_SettingsPath; //!< String containing the Path to the Settings.ini file.
 
 		/// <summary>
 		/// Clears all the member variables of this SettingsMan, effectively resetting the members of this abstraction level only.

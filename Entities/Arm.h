@@ -29,9 +29,7 @@ class HeldDevice;
 // Parent(s):       Attachable.
 // Class history:   05/30/2002 Arm created.
 
-class Arm:
-    public Attachable
-{
+class Arm : public Attachable {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -41,9 +39,9 @@ public:
 
 
 // Concrete allocation and cloning definitions
-EntityAllocation(Arm)
-SerializableOverrideMethods
-ClassInfoGetters
+EntityAllocation(Arm);
+SerializableOverrideMethods;
+ClassInfoGetters;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Constructor:     Arm

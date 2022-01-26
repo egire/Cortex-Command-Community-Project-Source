@@ -15,9 +15,9 @@ namespace RTE {
 		
 	public:
 
-		EntityAllocation(SoundContainer)
-		SerializableOverrideMethods
-		ClassInfoGetters
+		EntityAllocation(SoundContainer);
+		SerializableOverrideMethods;
+		ClassInfoGetters;
 
 		/// <summary>
 		/// How the SoundContainer should behave when it tries to play again while already playing.
@@ -87,6 +87,12 @@ namespace RTE {
 		/// </summary>
 		/// <returns>A reference to the top level SoundSet of this SoundContainer.</returns>
 		SoundSet & GetTopLevelSoundSet() { return m_TopLevelSoundSet; }
+
+		/// <summary>
+		/// Copies the passed in SoundSet reference into the top level SoundSet of this SoundContainer, effectively making that the new top level SoundSet.
+		/// </summary>
+		/// <param name="newTopLevelSoundSet">A reference to the new top level SoundSet for this SoundContainer.</param>
+		void SetTopLevelSoundSet(const SoundSet &newTopLevelSoundSet) { m_TopLevelSoundSet = newTopLevelSoundSet; m_SoundPropertiesUpToDate = false; }
 
 		/// <summary>
 		/// Gets a vector of hashes of the sounds selected to be played next in this SoundContainer.

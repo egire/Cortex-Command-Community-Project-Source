@@ -35,9 +35,7 @@ class PathFinder;
 // Parent(s):       Entity.
 // Class history:   08/02/2006 Scene created.
 
-class Scene:
-    public Entity
-{
+class Scene : public Entity {
 
 	friend struct EntityLuaBindings;
 
@@ -46,8 +44,8 @@ class Scene:
 
 public:
 
-	SerializableOverrideMethods
-	ClassInfoGetters
+	SerializableOverrideMethods;
+	ClassInfoGetters;
 
 	//Available placed objects sets
 	enum PlacedObjectSets
@@ -78,8 +76,8 @@ public:
 
     public:
 
-		SerializableClassNameGetter
-		SerializableOverrideMethods
+		SerializableClassNameGetter;
+		SerializableOverrideMethods;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Constructor:     Area

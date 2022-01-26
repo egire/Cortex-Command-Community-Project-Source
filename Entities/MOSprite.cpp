@@ -17,7 +17,7 @@
 
 namespace RTE {
 
-AbstractClassInfo(MOSprite, MovableObject)
+AbstractClassInfo(MOSprite, MovableObject);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -182,8 +182,8 @@ int MOSprite::ReadProperty(const std::string_view &propName, Reader &reader)
             m_SpriteAnimMode = ALWAYSLOOP;
         else if (mode == "ALWAYSPINGPONG")
             m_SpriteAnimMode = ALWAYSPINGPONG;
-        else if (mode == "LOOPWHENMOVING")
-            m_SpriteAnimMode = LOOPWHENMOVING;
+        else if (mode == "LOOPWHENACTIVE")
+            m_SpriteAnimMode = LOOPWHENACTIVE;
         else
             Abort
 */

@@ -51,9 +51,7 @@ class MOSRotating;
 // Parent(s):       SceneObject.
 // Class history:   03/18/2001 MovableObject created.
 
-class MovableObject:
-    public SceneObject
-{
+class MovableObject : public SceneObject {
 
 friend class Atom;
 friend struct EntityLuaBindings;
@@ -63,9 +61,9 @@ friend struct EntityLuaBindings;
 
 public:
 
-	ScriptFunctionNames("Create", "Destroy", "Update", "OnScriptDisable", "OnScriptEnable", "OnPieMenu", "OnCollideWithTerrain", "OnCollideWithMO")
-	SerializableOverrideMethods
-	ClassInfoGetters
+	ScriptFunctionNames("Create", "Destroy", "Update", "OnScriptDisable", "OnScriptEnable", "OnPieMenu", "OnCollideWithTerrain", "OnCollideWithMO");
+	SerializableOverrideMethods;
+	ClassInfoGetters;
 
 enum MOType
 {
@@ -1806,6 +1804,11 @@ enum MOType
 
 	void SetProvidesPieMenuContext(bool value) { m_ProvidesPieMenuContext = value; }
 
+    /// <summary>
+    /// Gets whether this MO's RootParent can GetHitByMOs and is currently traveling.
+    /// </summary>
+    /// <returns>Whether this MO's RootParent can GetHitByMOs and is currently traveling.</returns>
+    bool GetTraveling() const { return GetRootParent()->m_IsTraveling; }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Protected member variable and method declarations
@@ -1937,6 +1940,8 @@ protected:
     bool m_ToDelete;
     // To draw this guy's HUD or not
     bool m_HUDVisible;
+
+	bool m_IsTraveling; //!< Prevents self-intersection while traveling when simplified collision detection is used.
 
     std::map<std::string, bool> m_AllLoadedScripts; //!< A map of script paths to the enabled state of the given script.
     std::unordered_map<std::string, std::vector<std::string>> m_FunctionsAndScripts; //!< A map of function names to vectors of scripts paths. Used to maintain script execution order and avoid extraneous Lua calls.

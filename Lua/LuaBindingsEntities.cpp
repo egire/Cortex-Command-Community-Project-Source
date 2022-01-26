@@ -15,6 +15,7 @@ namespace RTE {
 		.property("Description", &Entity::GetDescription, &Entity::SetDescription)
 		.property("IsOriginalPreset", &Entity::IsOriginalPreset)
 		.property("ModuleID", &Entity::GetModuleID)
+		.property("ModuleName", &Entity::GetModuleName)
 		.property("RandomWeight", &Entity::GetRandomWeight)
 
 		.def("Clone", &CloneEntity)
@@ -84,13 +85,13 @@ namespace RTE {
 			luabind::value("MOVEMENTSTATECOUNT", ACrab::MovementState::MOVEMENTSTATECOUNT)
 		]
 		.enum_("Side")[
-			luabind::value("LEFTSIDE", ACrab::LEFTSIDE), // Doesn't have qualifier
-			luabind::value("RIGHTSIDE", ACrab::RIGHTSIDE), // Doesn't have qualifier
-			luabind::value("SIDECOUNT", ACrab::SIDECOUNT) // Doesn't have qualifier
+			luabind::value("LEFTSIDE", ACrab::Side::LEFTSIDE),
+			luabind::value("RIGHTSIDE", ACrab::Side::RIGHTSIDE),
+			luabind::value("SIDECOUNT", ACrab::Side::SIDECOUNT)
 		]
 		.enum_("Layer")[
-			luabind::value("FGROUND", ACrab::FGROUND), // Doesn't have qualifier
-			luabind::value("BGROUND", ACrab::BGROUND) // Doesn't have qualifier
+			luabind::value("FGROUND", ACrab::Layer::FGROUND),
+			luabind::value("BGROUND", ACrab::Layer::BGROUND)
 		]
 		.enum_("DeviceHandlingState")[
 			luabind::value("STILL", ACrab::DeviceHandlingState::STILL),
@@ -137,6 +138,8 @@ namespace RTE {
 		.property("CrashSound", &ACraft::GetCrashSound, &ACraftSetCrashSound)
 		.property("MaxPassengers", &ACraft::GetMaxPassengers)
 		.property("DeliveryDelayMultiplier", &ACraft::GetDeliveryDelayMultiplier)
+		.property("ScuttleOnDeath", &ACraft::GetScuttleOnDeath, &ACraft::SetScuttleOnDeath)
+		.property("HatchDelay", &ACraft::GetHatchDelay, &ACraft::SetHatchDelay)
 
 		.def("OpenHatch", &ACraft::OpenHatch)
 		.def("CloseHatch", &ACraft::CloseHatch)
@@ -149,8 +152,8 @@ namespace RTE {
 			luabind::value("HatchStateCount", ACraft::HatchState::HatchStateCount)
 		]
 		.enum_("Side")[
-			luabind::value("RIGHT", ACraft::RIGHT), // Doesn't have qualifier
-			luabind::value("LEFT", ACraft::LEFT) // Doesn't have qualifier
+			luabind::value("RIGHT", ACraft::Side::RIGHT),
+			luabind::value("LEFT", ACraft::Side::LEFT)
 		]
 
 		.enum_("CraftDeliverySequence")[
@@ -204,6 +207,7 @@ namespace RTE {
 		.property("DeathSound", &Actor::GetDeathSound, &ActorSetDeathSound)
 		.property("DeviceSwitchSound", &Actor::GetDeviceSwitchSound, &ActorSetDeviceSwitchSound)
 		.property("ImpulseDamageThreshold", &Actor::GetTravelImpulseDamage, &Actor::SetTravelImpulseDamage)
+		.property("StableRecoveryDelay", &Actor::GetStableRecoverDelay, &Actor::SetStableRecoverDelay)
 		.property("Status", &Actor::GetStatus, &Actor::SetStatus)
 		.property("Health", &Actor::GetHealth, &Actor::SetHealth)
 		.property("PrevHealth", &Actor::GetPrevHealth)
@@ -364,6 +368,8 @@ namespace RTE {
 		.property("EmitAngle", &AEmitter::GetEmitAngle, &AEmitter::SetEmitAngle)
 		.property("GetThrottle", &AEmitter::GetThrottle, &AEmitter::SetThrottle)
 		.property("Throttle", &AEmitter::GetThrottle, &AEmitter::SetThrottle)
+		.property("NegativeThrottleMultiplier", &AEmitter::GetNegativeThrottleMultiplier, &AEmitter::SetNegativeThrottleMultiplier)
+		.property("PositiveThrottleMultiplier", &AEmitter::GetPositiveThrottleMultiplier, &AEmitter::SetPositiveThrottleMultiplier)
 		.property("BurstSpacing", &AEmitter::GetBurstSpacing, &AEmitter::SetBurstSpacing)
 		.property("BurstDamage", &AEmitter::GetBurstDamage, &AEmitter::SetBurstDamage)
 		.property("EmitterDamageMultiplier", &AEmitter::GetEmitterDamageMultiplier, &AEmitter::SetEmitterDamageMultiplier)
@@ -404,6 +410,7 @@ namespace RTE {
 		.property("JetTimeLeft", &AHuman::GetJetTimeLeft, &AHuman::SetJetTimeLeft)
 		.property("JetAngleRange", &AHuman::GetJetAngleRange, &AHuman::SetJetAngleRange)
 		.property("ThrowPrepTime", &AHuman::GetThrowPrepTime, &AHuman::SetThrowPrepTime)
+		.property("ThrowProgress", &AHuman::GetThrowProgress)
 		.property("EquippedItem", &AHuman::GetEquippedItem)
 		.property("EquippedBGItem", &AHuman::GetEquippedBGItem)
 		.property("FirearmIsReady", &AHuman::FirearmIsReady)
@@ -464,8 +471,8 @@ namespace RTE {
 			luabind::value("PRONESTATECOUNT", AHuman::ProneState::PRONESTATECOUNT)
 		]
 		.enum_("Layer")[
-			luabind::value("FGROUND", AHuman::FGROUND), // Doesn't have qualifier
-			luabind::value("BGROUND", AHuman::BGROUND) // Doesn't have qualifier
+			luabind::value("FGROUND", AHuman::Layer::FGROUND),
+			luabind::value("BGROUND", AHuman::Layer::BGROUND)
 		]
 		.enum_("DeviceHandlingState")[
 			luabind::value("STILL", AHuman::DeviceHandlingState::STILL),
@@ -588,7 +595,9 @@ namespace RTE {
 
 		.property("RateOfFire", &HDFirearm::GetRateOfFire, &HDFirearm::SetRateOfFire)
 		.property("FullAuto", &HDFirearm::IsFullAuto, &HDFirearm::SetFullAuto)
+		.property("Reloadable", &HDFirearm::IsReloadable, &HDFirearm::SetReloadable)
 		.property("RoundInMagCount", &HDFirearm::GetRoundInMagCount)
+		.property("RoundInMagCapacity", &HDFirearm::GetRoundInMagCapacity)
 		.property("Magazine", &HDFirearm::GetMagazine, &HDFirearmSetMagazine)
 		.property("Flash", &HDFirearm::GetFlash, &HDFirearmSetFlash)
 		.property("PreFireSound", &HDFirearm::GetPreFireSound, &HDFirearmSetPreFireSound)
@@ -602,10 +611,12 @@ namespace RTE {
 		.property("ActivationDelay", &HDFirearm::GetActivationDelay, &HDFirearm::SetActivationDelay)
 		.property("DeactivationDelay", &HDFirearm::GetDeactivationDelay, &HDFirearm::SetDeactivationDelay)
 		.property("ReloadTime", &HDFirearm::GetReloadTime, &HDFirearm::SetReloadTime)
+		.property("ReloadProgress", &HDFirearm::GetReloadProgress)
 		.property("ShakeRange", &HDFirearm::GetShakeRange, &HDFirearm::SetShakeRange)
 		.property("SharpShakeRange", &HDFirearm::GetSharpShakeRange, &HDFirearm::SetSharpShakeRange)
 		.property("NoSupportFactor", &HDFirearm::GetNoSupportFactor, &HDFirearm::SetNoSupportFactor)
 		.property("ParticleSpreadRange", &HDFirearm::GetParticleSpreadRange, &HDFirearm::SetParticleSpreadRange)
+		.property("ShellVelVariation", &HDFirearm::GetShellVelVariation, &HDFirearm::SetShellVelVariation)
 		.property("FiredOnce", &HDFirearm::FiredOnce)
 		.property("FiredFrame", &HDFirearm::FiredFrame)
 		.property("RoundsFired", &HDFirearm::RoundsFired)
@@ -755,6 +766,7 @@ namespace RTE {
 		.property("HFlipped", &MOSprite::IsHFlipped, &MOSprite::SetHFlipped)
 		.property("FlipFactor", &MOSprite::GetFlipFactor)
 		.property("RotAngle", &MOSprite::GetRotAngle, &MOSprite::SetRotAngle)
+		.property("PrevRotAngle", &MOSprite::GetPrevRotAngle)
 		.property("AngularVel", &MOSprite::GetAngularVel, &MOSprite::SetAngularVel)
 		.property("Frame", &MOSprite::GetFrame, &MOSprite::SetFrame)
 		.property("SpriteAnimMode", &MOSprite::GetSpriteAnimMode, &MOSprite::SetSpriteAnimMode)
@@ -778,7 +790,7 @@ namespace RTE {
 			luabind::value("ALWAYSLOOP", MOSprite::SpriteAnimMode::ALWAYSLOOP),
 			luabind::value("ALWAYSRANDOM", MOSprite::SpriteAnimMode::ALWAYSRANDOM),
 			luabind::value("ALWAYSPINGPONG", MOSprite::SpriteAnimMode::ALWAYSPINGPONG),
-			luabind::value("LOOPWHENMOVING", MOSprite::SpriteAnimMode::LOOPWHENMOVING),
+			luabind::value("LOOPWHENACTIVE", MOSprite::SpriteAnimMode::LOOPWHENACTIVE),
 			luabind::value("LOOPWHENOPENCLOSE", MOSprite::SpriteAnimMode::LOOPWHENOPENCLOSE),
 			luabind::value("PINGPONGOPENCLOSE", MOSprite::SpriteAnimMode::PINGPONGOPENCLOSE),
 			luabind::value("OVERLIFETIME", MOSprite::SpriteAnimMode::OVERLIFETIME),
@@ -801,6 +813,7 @@ namespace RTE {
 		.property("GibWoundLimit", (int (MOSRotating:: *)() const) &MOSRotating::GetGibWoundLimit, &MOSRotating::SetGibWoundLimit)
 		.property("GibSound", &MOSRotating::GetGibSound, &MOSRotatingSetGibSound)
 		.property("GibImpulseLimit", &MOSRotating::GetGibImpulseLimit, &MOSRotating::SetGibImpulseLimit)
+		.property("WoundCountAffectsImpulseLimitRatio", &MOSRotating::GetWoundCountAffectsImpulseLimitRatio)
 		.property("DamageMultiplier", &MOSRotating::GetDamageMultiplier, &MOSRotating::SetDamageMultiplier)
 		.property("WoundCount", (int (MOSRotating:: *)() const) &MOSRotating::GetWoundCount)
 		.property("OrientToVel", &MOSRotating::GetOrientToVel, &MOSRotating::SetOrientToVel)
@@ -1100,6 +1113,7 @@ namespace RTE {
 
 		.def("HasAnySounds", &SoundContainer::HasAnySounds)
 		.def("GetTopLevelSoundSet", &SoundContainer::GetTopLevelSoundSet)
+		.def("SetTopLevelSoundSet", &SoundContainer::SetTopLevelSoundSet)
 		.def("IsBeingPlayed", &SoundContainer::IsBeingPlayed)
 		.def("Play", (bool (SoundContainer:: *)()) &SoundContainer::Play)
 		.def("Play", (bool (SoundContainer:: *)(const int player)) &SoundContainer::Play)
@@ -1131,8 +1145,10 @@ namespace RTE {
 
 		.def("HasAnySounds", &SoundSet::HasAnySounds)
 		.def("SelectNextSounds", &SoundSet::SelectNextSounds)
-		.def("AddSound", (void (SoundSet:: *)(std::string const &soundFilePath)) &SoundSet::AddSound)
-		.def("AddSound", (void (SoundSet:: *)(std::string const &soundFilePath, const Vector &offset, float minimumAudibleDistance, float attenuationStartDistance)) &SoundSet::AddSound)
+		.def("AddSound", (void (SoundSet:: *)(const std::string &soundFilePath)) &SoundSet::AddSound)
+		.def("AddSound", (void (SoundSet:: *)(const std::string &soundFilePath, const Vector &offset, float minimumAudibleDistance, float attenuationStartDistance)) &SoundSet::AddSound)
+		.def("RemoveSound", (bool (SoundSet:: *)(const std::string &soundFilePath)) &SoundSet::RemoveSound)
+		.def("RemoveSound", (bool (SoundSet:: *)(const std::string &soundFilePath, bool removeFromSubSoundSets)) &SoundSet::RemoveSound)
 		.def("AddSoundSet", &SoundSet::AddSoundSet)
 
 		.enum_("SoundSelectionCycleMode")[
@@ -1166,7 +1182,9 @@ namespace RTE {
 		return ConcreteTypeLuaClassDefinition(ThrownDevice, HeldDevice)
 
 		.property("MinThrowVel", &ThrownDevice::GetMinThrowVel, &ThrownDevice::SetMinThrowVel)
-		.property("MaxThrowVel", &ThrownDevice::GetMaxThrowVel, &ThrownDevice::SetMaxThrowVel);
+		.property("MaxThrowVel", &ThrownDevice::GetMaxThrowVel, &ThrownDevice::SetMaxThrowVel)
+		.property("StartThrowOffset", &ThrownDevice::GetStartThrowOffset, &ThrownDevice::SetStartThrowOffset)
+		.property("EndThrowOffset", &ThrownDevice::GetEndThrowOffset, &ThrownDevice::SetEndThrowOffset);
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

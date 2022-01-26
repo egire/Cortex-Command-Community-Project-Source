@@ -34,8 +34,7 @@ class AEmitter;
 // Parent(s):       Actor.
 // Class history:   10/24/2007 ACrab created.
 
-class ACrab :
-	public Actor {
+class ACrab : public Actor {
 	friend struct EntityLuaBindings;
 
 
@@ -67,19 +66,19 @@ public:
 
 
 // Concrete allocation and cloning definitions
-	EntityAllocation(ACrab)
-		SerializableOverrideMethods
-		ClassInfoGetters
-		//Note: Default pie menu name changes for ACrab if it's in the Turret group, so it defines the GetDefaultPieMenuName method directly, instead of using the DefaultPieMenuName macro.
+	EntityAllocation(ACrab);
+	SerializableOverrideMethods;
+	ClassInfoGetters;
+	//Note: Default pie menu name changes for ACrab if it's in the Turret group, so it defines the GetDefaultPieMenuName method directly, instead of using the DefaultPieMenuName macro.
 
-		//////////////////////////////////////////////////////////////////////////////////////////
-		// Constructor:     ACrab
-		//////////////////////////////////////////////////////////////////////////////////////////
-		// Description:     Constructor method used to instantiate a ACrab object in system
-		//                  memory. Create() should be called before using the object.
-		// Arguments:       None.
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Constructor:     ACrab
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Description:     Constructor method used to instantiate a ACrab object in system
+	//                  memory. Create() should be called before using the object.
+	// Arguments:       None.
 
-		ACrab() { Clear(); }
+	ACrab() { Clear(); }
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -333,6 +332,12 @@ public:
 // Return value:    Whether a currently HDFirearm (if any) has less than half of ammo left.
 
 	bool FirearmNeedsReload() const;
+
+	/// <summary>
+	/// Gets whether or not all of this ACrab's Turret's HDFirearms are full.
+	/// </summary>
+	/// <returns>Whether or not all of this ACrab's Turret's HDFirearms are full. Will return true if there is no Turret or no HDFirearms.</returns>
+	bool FirearmsAreFull() const;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////

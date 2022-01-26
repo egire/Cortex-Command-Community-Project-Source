@@ -34,9 +34,7 @@ class ContentFile;
 // Parent(s):       SceneObject.
 // Class history:   02/27/2012 Deployment created.
 
-class Deployment:
-    public SceneObject
-{
+class Deployment : public SceneObject {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -46,9 +44,9 @@ public:
 
 
 // Concrete allocation and cloning definitions
-EntityAllocation(Deployment)
-SerializableOverrideMethods
-ClassInfoGetters
+EntityAllocation(Deployment);
+SerializableOverrideMethods;
+ClassInfoGetters;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Constructor:     Deployment

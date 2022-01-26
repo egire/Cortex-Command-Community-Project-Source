@@ -76,7 +76,7 @@ namespace RTE {
 
 	public:
 
-		SerializableOverrideMethods
+		SerializableOverrideMethods;
 
 #pragma region ClassInfo
 		/// <summary>
@@ -336,6 +336,12 @@ namespace RTE {
 		/// </summary>
 		/// <returns>A string with the module and instance name of this Entity.</returns>
 		std::string GetModuleAndPresetName() const;
+
+		/// <summary>
+		/// Gets the name of this Entity's Data Module it was defined in.
+		/// </summary>
+		/// <returns>A string with the module of this Entity.</returns>
+		std::string GetModuleName() const;
 
 		/// <summary>
 		/// Indicates whether this Entity was explicitly given a new instance name upon creation, or if it was just copied/inherited implicitly.

@@ -30,9 +30,7 @@ namespace RTE
 // Parent(s):       Entity.
 // Class history:   8/6/2007 SceneObject created.
 
-class SceneObject:
-    public Entity
-{
+class SceneObject : public Entity {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -40,8 +38,8 @@ class SceneObject:
 
 public:
 
-	SerializableOverrideMethods
-	ClassInfoGetters
+	SerializableOverrideMethods;
+	ClassInfoGetters;
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -62,8 +60,8 @@ public:
 
     public:
 
-		SerializableClassNameGetter
-		SerializableOverrideMethods
+		SerializableClassNameGetter;
+		SerializableOverrideMethods;
 
 
     //////////////////////////////////////////////////////////////////////////////////////////

@@ -41,9 +41,7 @@ class HeldDevice;
 // Parent(s):       MOSRotating.
 // Class history:   04/13/2001 Actor created.
 
-class Actor:
-    public MOSRotating
-{
+class Actor : public MOSRotating {
     friend struct EntityLuaBindings;
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1301,11 +1299,23 @@ DefaultPieMenuNameVirtual("Empty Pie Menu")
 	/// <param name="newVelVector">Vector with new values for how fast the actor can travel before losing stability on both axis.</param>
 	void SetStableVel(Vector newVelVector) { m_StableVel = newVelVector; }
 
-    /// <summary>
-    /// Gets a pointer to the PieMenuGUI for this Actor. Ownership is NOT transferred.
-    /// </summary>
-    /// <returns>The PieMenuGUI for this Actor.</returns>
-    PieMenuGUI * GetPieMenu() const { return m_PieMenu.get(); }
+	/// <summary>
+	/// Gets the recovery delay from UNSTABLE to STABLE, in MS.
+	/// </summary>
+	/// <returns>The recovery delay, in MS.</returns>
+	int GetStableRecoverDelay() const { return m_StableRecoverDelay; }
+
+	/// <summary>
+	/// Sets the recovery delay from UNSTABLE to STABLE, in MS.
+	/// </summary>
+	/// <param name="newRecoverDelay">The recovery delay, in MS.</param>
+	void SetStableRecoverDelay(int newRecoverDelay) { m_StableRecoverDelay = newRecoverDelay; }
+
+	/// <summary>
+	/// Gets a pointer to the PieMenuGUI for this Actor. Ownership is NOT transferred.
+	/// </summary>
+	/// <returns>The PieMenuGUI for this Actor.</returns>
+	PieMenuGUI *GetPieMenu() const { return m_PieMenu.get(); }
 
 	/// <summary>
 	/// Sets the PieMenuGUI for this Actor. Ownership IS transferred.
@@ -1347,7 +1357,6 @@ protected:
     SoundContainer *m_DeathSound;
     SoundContainer *m_DeviceSwitchSound;
 
-//    bool m_FacingRight;
     int m_Status;
     float m_Health;
     // Maximum health
@@ -1371,6 +1380,7 @@ protected:
     Timer m_StableRecoverTimer;
     // Thresholds in both x and y for how fast the actor can travel before losing stability. Meters per second (m/s).
     Vector m_StableVel;
+	int m_StableRecoverDelay; //!< The delay before regaining stability after losing it, in MS
     // Timer for the heartbeat of this Actor
     Timer m_HeartBeat;
     // Timer for timing how long this has been under Control
