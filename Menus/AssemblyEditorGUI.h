@@ -381,8 +381,7 @@ protected:
 	// Whether we need a clear path to orbit to place brain
 	bool m_RequireClearPathToOrbit;
 
-    // The pie menu
-    PieMenuGUI *m_pPieMenu;
+	std::unique_ptr<PieMenuGUI> m_PieMenu; //!< The PieMenuGUI for this AssemblyEditorGUI.
     // The object picker
     ObjectPickerGUI *m_pPicker;
     // The ID of the DataModule that contains the native Tech of the Player using this menu
