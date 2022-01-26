@@ -139,6 +139,12 @@ public:
 
     void SetController(Controller *pController);
 
+	/// <summary>
+	/// Sets the FeatureSet for this SceneEditorGUI, and sets up the PieMenuGUI accordingly.
+	/// </summary>
+	/// <param name="newFeatureSet">The new FeatureSet for this SceneEditorGUI.</param>
+	void SetFeatureSet(SceneEditorGUI::FeatureSets newFeatureSet);
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Method:          SetPosOnScreen
@@ -300,16 +306,6 @@ protected:
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Method:          UpdatePieMenu
-//////////////////////////////////////////////////////////////////////////////////////////
-// Description:     Updates the PieMenu config based ont eh current editor state.
-// Arguments:       None.
-// Return value:    None.
-
-    void UpdatePieMenu();
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
 // Method:          UpdateBrainPath
 //////////////////////////////////////////////////////////////////////////////////////////
 // Description:     Updates the brain path to the current brain in cursor or resident
@@ -355,8 +351,7 @@ protected:
 	// Whether we need a clear path to orbit to place brain
 	bool m_RequireClearPathToOrbit;
 
-    // The pie menu
-    PieMenuGUI *m_pPieMenu;
+	std::unique_ptr<PieMenuGUI> m_PieMenu; //!< The PieMenuGUI for this SceneEditorGUI.
     // The object picker
     ObjectPickerGUI *m_pPicker;
     // The ID of the DataModule that contains the native Tech of the Player using this menu
