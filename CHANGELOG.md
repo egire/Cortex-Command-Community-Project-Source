@@ -16,25 +16,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 </details>
 
 <details><summary><b>Removed</b></summary>
-</details>
-
-***
-
-## [0.1.0 pre-release 4.0][0.1.0-pre4.0] - 2022/02/28
-
-<details><summary><b>Added</b></summary>
-
-</details>
-
-<details><summary><b>Changed</b></summary>
-
-</details>
-
-<details><summary><b>Fixed</b></summary>
-
-</details>
-
-<details><summary><b>Removed</b></summary>
 
 - Removed online multiplayer implementation. ([Issue #405](https://github.com/cortex-command-community/Cortex-Command-Community-Project-Source/issues/405))
 
@@ -42,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ***
 
-## [Unreleased]
+## [0.1.0 pre-release 4.0][0.1.0-pre4.0] - 2022/02/28
 
 <details><summary><b>Added</b></summary>
 
